@@ -1,0 +1,88 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: oebs-melosys-api-t1
+  namespace: team-oebs
+  labels:
+    team: team-oebs
+spec:
+  image: repo.adeo.no:5443/oebs/oebs-melosys-api-t1:0.0.1
+  port: 8080
+  replicas:
+    min: 2
+    max: 4
+    cpuThresholdPercentage: 50
+  liveness:
+    path: /internal/isalive
+    initialDelay: 60
+    timeout: 10
+  readiness:
+    path: /internal/isready
+    initialDelay: 60
+    timeout: 10
+  resources:
+    requests:
+      cpu: 400m
+      memory: 1024Mi
+    limits:
+      cpu: 4000m
+      memory: 2048Mi
+  azure:
+    application:
+      enabled: true
+  accessPolicy:
+    inbound:
+      rules:
+         - application: oebs-melosys-api-t1
+           namespace: team-oebs
+           cluster: dev-fss
+  prometheus:
+    enabled: true
+    path: /actuator/prometheus
+  vault:
+    enabled: true
+    paths:
+      - kvPath: "kv/preprod/fss/oebs-melosys-api-t1/team-oebs/apps-user"
+        mountPath: "/secrets/oebst1/apps-user"
+      - kvPath: "kv/preprod/fss/oebs-melosys-api-t1/team-oebs/app-name"
+        mountPath: "/secrets/oebst1/app-name"
+      - kvPath: "kv/preprod/fss/oebs-melosys-api-t1/team-oebs/jdbc-url"
+        mountPath: "/secrets/oebst1/jdbc-url"
+
+  ingresses:
+     - "https://oebs-melosys-api-t1.dev.intern.nav.no"
+
+---
+apiVersion: nais.io/v1
+kind: Alert
+metadata:
+  name: oebs-melosys-api-t1
+  namespace: team-oebs
+  labels:
+    team: team-oebs
+spec:
+  receivers:
+    slack:
+      channel: 'oebs-api-ev'
+  alerts:
+    - alert: oebs-melosys-api-t1_U1_applikasjonsinstanser nede
+      expr: kube_deployment_status_replicas_unavailable{deployment=~"oebs-melosys-api.*"} > 0
+      for: 2m
+      description: >
+        *\{{ $labels.deployment }}* har utilgjengelige applikasjonsinstanser (podder)
+      action: >
+        Kjør `kubectl describe pod -l app=\{{ $labels.deployment }} -n \{{ $labels.namespace }}` for å se events,
+        evt. kjør først `kubectl get pods -l app=\{{ $labels.deployment }} -n \{{ $labels.namespace }}` for en oversikt over poddene.
+        Sjekk også Kibana for eventuelle feil som er logget;
+        query `application:\{{ $labels.deployment }} AND (level:Error OR level:Warning)`.
+      severity: danger
+    - alert: oebs-api-ve-u1_U1_feil er logget
+      expr: sum(increase(logd_messages_total{log_app=~"oebs-melosys-api.*",log_level="Error"}[10m])) by (log_app, log_namespace) > 0
+      for: 3m
+      description: >
+        *\{{ $labels.log_app }}* har logget feil med loggnivå Error
+      action: >
+        Antall feil målt over siste 10 minutter er *\{{ $value }}*.
+        Sjekk Kibana for detaljer om feil som er logget;
+        query `application:\{{ $labels.log_app }} AND (level:Error OR level:Warning)`.
+      severity: danger

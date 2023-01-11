@@ -1,0 +1,76 @@
+
+no.nav.security.jwt:
+  issuer:
+    azure:
+      # < oeb-melosys-api clientinfo >
+      # discoveryurl: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0/.well-known/openid-configuration
+      # accepted_audience: 44484cc8-2444-4215-beed-4cc7505e3ab7
+      # proxyurl: http://webproxy-nais.nav.no:8088
+      # cookie_name: azure_token
+      # reststs:
+      #  discoveryurl: https://security-token-service.dev.adeo.no/rest/v1/sts/.well-known/openid-configuration
+      #  accepted_audience: srv_oebs
+      # proxyurl: http://webproxy-utvikler.nav.no:8088
+
+
+# logging.level.org.springframework: INFO
+# logging.level.no.nav: DEBUG
+
+server:
+  port: 8080
+
+spring:
+  profiles:
+     active: local # nais # local
+  application:
+    name: oebs-melosys-api
+
+  kafka:
+    producer:
+      client.id: melosys-api
+      properties:
+        max.block.ms: 5000
+        request.timeout.ms: 30000
+      retries: 2147483647
+      bootstrap-servers: "http://d26apbl007.test.local:9092"
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      topic: faktura-bestilt.v1-q2
+    consumer:
+      bootstrap-servers: "http://d26apbl007.test.local:9092"
+      group-id: group_id
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      topic: faktura-bestilt.v1-q1
+
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+  flyway:
+    locations: classpath:/db/migration,classpath:/db/oracle
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.Oracle12cDialect
+    show-sql: false
+    open-in-view: false
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+
+# Quartz
+using:
+  spring:
+    schedulerFactory: true
+
+springdoc:
+  packagesToScan: no.nav.oebs.melosys
+  override-with-generic-response: false
+  remove-broken-reference-definitions: false
+  swagger-ui:
+    disable-swagger-default-url: true
+    tags-sorter: alpha
