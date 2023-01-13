@@ -1,11 +1,12 @@
 package no.nav.oebs.melosys.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+
 
 
 /**
  * Serviceklasse som behandler mottatte faktura fra Kafka.
  */
+@Service
 public class FakturaService {
 }
