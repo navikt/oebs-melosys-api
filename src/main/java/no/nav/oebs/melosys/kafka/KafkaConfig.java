@@ -19,6 +19,7 @@ import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 
 @EnableKafka
 @Configuration
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 public class KafkaConfig {
 
     // Max antall forsøk på retry når feil kastes tilbake til Spring Kafka fra applikasjonens Kafka-listener.
