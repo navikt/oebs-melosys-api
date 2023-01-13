@@ -9,16 +9,14 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.5</version>
+        <version>3.0.1</version>
         <relativePath/>
     </parent>
 
     <properties>
         <java.version>18</java.version>
-
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
         <surefire.argLine>-Dfile.encoding=UTF-8</surefire.argLine>
         <surefire.coverage.argLine/>
 
