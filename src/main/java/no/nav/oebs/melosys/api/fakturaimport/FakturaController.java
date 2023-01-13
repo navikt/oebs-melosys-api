@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import no.nav.oebs.melosys.config.SwaggerConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,7 +36,8 @@ public class FakturaController {
 
 	private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
-	// private FakturaService service;
+	@Autowired
+	private FakturaService service;
 
 	public FakturaController(FakturaService service) { //,
 			this.service = service;
@@ -50,7 +52,7 @@ public class FakturaController {
 	@GetMapping(path = "/fakturaimport")
 	@FakturaSwagger
 	public String finnFaktura() {
-
+		return null;
 		// return service.finnFaktura();
 	}
 }
