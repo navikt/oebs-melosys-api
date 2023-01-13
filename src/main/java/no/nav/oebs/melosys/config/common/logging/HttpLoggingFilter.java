@@ -7,10 +7,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import no.nav.oebs.melosys.db.entity.KallLogg;
 import no.nav.oebs.melosys.config.common.mdc.MdcOperations;

@@ -1,7 +1,7 @@
 package no.nav.oebs.melosys.db.repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import no.nav.oebs.melosys.db.entity.KallLogg;
 import org.springframework.stereotype.Repository;
