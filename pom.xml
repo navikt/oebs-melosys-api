@@ -23,8 +23,8 @@
         <!-- NAV artifacts -->
         <token-validation.version>3.0.2</token-validation.version>
         <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
-        <nimbus-jose-jwt.version>9.25.6</nimbus-jose-jwt.version>
-        <springdoc-openapi.version>1.6.12</springdoc-openapi.version>
+        <nimbus-jose-jwt.version>9.28</nimbus-jose-jwt.version>
+        <springdoc-openapi.version>1.6.14</springdoc-openapi.version>
         <sonar-maven-plugin.version>3.9.1.2184</sonar-maven-plugin.version>
     </properties>
 
@@ -75,7 +75,6 @@
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
-            <version>3.0.1</version>
         </dependency>
 
         <!-- Automatisk reload ved kodeendringer -->
