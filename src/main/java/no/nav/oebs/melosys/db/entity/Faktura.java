@@ -1,13 +1,14 @@
 package no.nav.oebs.melosys.db.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,7 +47,9 @@ public class Faktura {
         @Column(name = "FAKTURA_ID")
         private Long fakturaId;
 
-        @Column(name = "FODSELSNR")
+        @NotBlank
+        @Size(min = 11, max = 11)
+        @Column(name = "FODSELSNR", length = 11)
         private String fodselsnr;
 
         @Column(name = "FAKTURA_DATO")
@@ -55,6 +58,7 @@ public class Faktura {
         @Column(name = "VEDTAKSID")
         private String vedtaksId;
 
+        @NotBlank
         @Column(name = "FAKTURAREFNR")
         private LocalDateTime fakturaRefNr;
 
@@ -64,14 +68,21 @@ public class Faktura {
         @Column(name = "REFERANSEBRUKER")
         private String referanseBruker;
 
+        @NotBlank
         @Column(name = "REFERANSENAV")
         private String refranseNAV;
 
+        @NotNull
         @Column(name = "FAKTURABESKRIVELSE")
         private String fakturaBeskrivelse;
 
-         @Column(name = "FAKTURAJSON")
-         private String fakturaJson;
+        //@NotBlank
+        //@OneToMany(mappedBy = "fakturaId") // cascade osv?
+        //Map<String, Object> fakturalinjer;
+        //private List<FakturaLinje> fakturalinjer;
+
+        @Column(name = "FAKTURAJSON")
+        private String fakturaJson;
 
         @Column(name = "KORRELASJON_ID")
         private String korrelasjonId;

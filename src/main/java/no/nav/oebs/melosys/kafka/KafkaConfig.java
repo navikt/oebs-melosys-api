@@ -2,6 +2,7 @@ package no.nav.oebs.melosys.kafka;
 
 import java.util.Map;
 
+import no.nav.oebs.melosys.db.entity.Faktura;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties.AckMode;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 
 
@@ -34,23 +36,29 @@ public class KafkaConfig {
     @Value("${app.kafka.authorization-exception-retry-interval-secs}")
     private long authorizationExceptionRetryIntervalSecs;
 
+    //@Value("${spring.kafka.consumer.bootstrap-servers}")
+    //private String bootstrapServer;
+
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaLivshendelseListenerContainerFactory(
+    public ConcurrentKafkaListenerContainerFactory<String, Faktura> kafkaLivshendelseListenerContainerFactory(
             KafkaProperties properties) {
-        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        ConcurrentKafkaListenerContainerFactory<String, Faktura> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(kafkaLivshendelseConsumerFactory(properties));
         factory.getContainerProperties().setAckMode(AckMode.RECORD);
 
         return factory;
     }
 
-    private ConsumerFactory<String, Object> kafkaLivshendelseConsumerFactory(KafkaProperties properties) {
+    private ConsumerFactory<String, Faktura> kafkaLivshendelseConsumerFactory(KafkaProperties properties) {
         Map<String, Object> consumerProperties = properties.buildConsumerProperties();
         consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         consumerProperties.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
-
-        return new DefaultKafkaConsumerFactory<>(consumerProperties);
+        consumerProperties.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
+        return new DefaultKafkaConsumerFactory<>(consumerProperties,
+                new StringDeserializer(),
+                new JsonDeserializer<>(Faktura.class));
     }
+
 }
