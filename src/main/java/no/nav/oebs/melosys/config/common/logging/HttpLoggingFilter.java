@@ -89,7 +89,7 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
 					.response(formattedResponse) //
 					.build();
 
-			// log.debug(kallLogg.toString());
+			log.debug(kallLogg.toString());
 
 			//saveKallLogg(kallLogg);
 		}
