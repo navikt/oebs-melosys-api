@@ -1,5 +1,6 @@
 package no.nav.oebs.melosys.kafka;
 
+import java.time.Duration;
 import java.util.Map;
 
 import no.nav.oebs.melosys.db.entity.Faktura;
@@ -14,6 +15,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties.AckMode;
+import org.springframework.kafka.support.LogIfLevelEnabled;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
@@ -41,24 +43,26 @@ public class KafkaConfig {
 
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Faktura> kafkaLivshendelseListenerContainerFactory(
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaLivshendelseListenerContainerFactory(
             KafkaProperties properties) {
-        ConcurrentKafkaListenerContainerFactory<String, Faktura> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(kafkaLivshendelseConsumerFactory(properties));
-        factory.getContainerProperties().setAckMode(AckMode.RECORD);
-
+        factory.getContainerProperties().setAckMode(AckMode.MANUAL_IMMEDIATE);
+        factory.getContainerProperties().setSyncCommits(true); // sync or Async
+        factory.getContainerProperties().setCommitLogLevel(LogIfLevelEnabled.Level.INFO); // log commits av offset
+        // retries og backoff for commits
+        factory.getContainerProperties().setCommitRetries(retryMaxAttempts);
+        factory.getContainerProperties().setSyncCommitTimeout(Duration.ofMillis(retryBackoffPeriod));
         return factory;
     }
 
-    private ConsumerFactory<String, Faktura> kafkaLivshendelseConsumerFactory(KafkaProperties properties) {
+    private ConsumerFactory<String, String> kafkaLivshendelseConsumerFactory(KafkaProperties properties) {
         Map<String, Object> consumerProperties = properties.buildConsumerProperties();
         consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         consumerProperties.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
-        consumerProperties.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
-        return new DefaultKafkaConsumerFactory<>(consumerProperties,
-                new StringDeserializer(),
-                new JsonDeserializer<>(Faktura.class));
+        consumerProperties.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, StringDeserializer.class);
+        return new DefaultKafkaConsumerFactory<>(consumerProperties);
     }
 
 }
