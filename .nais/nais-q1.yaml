@@ -36,7 +36,8 @@ spec:
          - application: oebs-melosys-api-q1
            namespace: team-oebs
            cluster: dev-fss
-
+  kafka:
+    pool: nav-dev
   prometheus:
     enabled: true
     path: /actuator/prometheus
