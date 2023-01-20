@@ -1,4 +1,4 @@
-FROM navikt/java:18
+FROM navikt/java:17
 
 WORKDIR /app
 
