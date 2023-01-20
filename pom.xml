@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>no.nav.oebs</groupId>
-    <artifactId>oebs-melosys-api</artifactId>
-    <version>0.4.9</version>
+    <artifactId>oebs-melosys-api-q1</artifactId>
+    <version>0.0.1</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -14,7 +14,7 @@
     </parent>
 
     <properties>
-        <java.version>18</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <surefire.argLine>-Dfile.encoding=UTF-8</surefire.argLine>
