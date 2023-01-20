@@ -1,7 +1,6 @@
 package no.nav.oebs.melosys.kafka;
 
 import java.time.LocalDateTime;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +21,7 @@ public class KafkaFilterConfig {
     @DateTimeFormat(iso = ISO.DATE_TIME)
     private LocalDateTime startTime;
 
-    private List<String> livshendelser = new ArrayList<>();
+    private List<String> faktura = new ArrayList<>();
 
     private boolean debugMode;
 }
