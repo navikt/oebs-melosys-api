@@ -17,7 +17,6 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties.AckMode;
 import org.springframework.kafka.support.LogIfLevelEnabled;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 
 
@@ -38,15 +37,11 @@ public class KafkaConfig {
     @Value("${app.kafka.authorization-exception-retry-interval-secs}")
     private long authorizationExceptionRetryIntervalSecs;
 
-    //@Value("${spring.kafka.consumer.bootstrap-servers}")
-    //private String bootstrapServer;
-
-
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaLivshendelseListenerContainerFactory(
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
             KafkaProperties properties) {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(kafkaLivshendelseConsumerFactory(properties));
+        factory.setConsumerFactory(kafkaConsumerFactory(properties));
         factory.getContainerProperties().setAckMode(AckMode.MANUAL_IMMEDIATE);
         factory.getContainerProperties().setSyncCommits(true); // sync or Async
         factory.getContainerProperties().setCommitLogLevel(LogIfLevelEnabled.Level.INFO); // log commits av offset
@@ -56,7 +51,7 @@ public class KafkaConfig {
         return factory;
     }
 
-    private ConsumerFactory<String, String> kafkaLivshendelseConsumerFactory(KafkaProperties properties) {
+    private ConsumerFactory<String, String> kafkaConsumerFactory(KafkaProperties properties) {
         Map<String, Object> consumerProperties = properties.buildConsumerProperties();
         consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
