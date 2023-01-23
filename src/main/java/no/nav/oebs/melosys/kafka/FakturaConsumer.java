@@ -1,38 +1,41 @@
 package no.nav.oebs.melosys.kafka;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.oebs.melosys.api.fakturaimport.FakturaService;
-import no.nav.oebs.melosys.db.entity.Faktura;
+import no.nav.oebs.melosys.db.repository.PlsqlProcedureRepository;
+import no.nav.oebs.melosys.db.repository.PlsqlProcedureResult;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.support.serializer.DeserializationException;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
-
-/**
- * Kafka-listener som mottar livshendelser fra topicen.
- */
 
 @Slf4j
 @Component
 public class FakturaConsumer {
 
+    private static final String PLSQL_PROCEDURE = "prosedyrenavn";
+
     @Autowired
-    private FakturaService fakturaService;
+    private PlsqlProcedureRepository plsqlProcedureRepository;
+
+
+
+    // TODO: PSLQL exception håndtering
+    // TODO: KafkaListener exception håndtering
     @KafkaListener(topics = "${spring.kafka.consumer.topic}",
-            groupId = "${spring.kafka.consumer.group-id}",
-            errorHandler = "fakturaErrorHandler")
-    public void consumeMessages(ConsumerRecord<String, Faktura> record) {
+            groupId = "${spring.kafka.consumer.group-id}")
+    public void consumeMessages(ConsumerRecord<String, String> record, Acknowledgment acks) {
         // håndtere data her
         log.info("Melding fra kafka topic: {}", record);
-        String key = record.key();
-        Faktura faktura = record.value();
-        // save to database
-        //fakturaService.save(faktura);
-    }
+        String fakturaJson = record.value();
+        log.info("Json i String format: {}", fakturaJson);
+        PlsqlProcedureResult result = plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, fakturaJson);
+        if (result.getMessageNumber() == 0)
+            acks.acknowledge();
+        else{
+            //håndtere error før commit
+        }
 
-    private void handleDeserializationException(DeserializationException exception, ConsumerRecord<String, String> consumer) {
-        log.error("Feil under deserializering av meldingen: {}", exception);
     }
 
 }
