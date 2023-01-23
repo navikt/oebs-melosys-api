@@ -2,11 +2,16 @@ package no.nav.oebs.melosys.config;
 
 import io.micrometer.core.instrument.util.IOUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Configuration;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @Slf4j
+@Configuration
+@ConditionalOnProperty(prefix = "spring.profiles", name = "active", havingValue = "nais")
 public class Props {
 
     public static String configEnv(String fileName) {
