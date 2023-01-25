@@ -29,12 +29,13 @@ public class FakturaConsumer {
         log.info("Melding fra kafka topic: {}", record);
         String fakturaJson = record.value();
         log.info("Json i String format: {}", fakturaJson);
-        PlsqlProcedureResult result = plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, fakturaJson);
-        if (result.getMessageNumber() == 0)
-            acks.acknowledge();
-        else{
-            //håndtere error før commit
-        }
+        //PlsqlProcedureResult result = plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, fakturaJson);
+//        if (result.getMessageNumber() == 0)
+//            //acks.acknowledge();
+//            log.info("Committing offset: {}", record.offset());
+//        else{
+//            //håndtere error før commit
+//        }
 
     }
 

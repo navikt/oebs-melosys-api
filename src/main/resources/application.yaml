@@ -13,29 +13,25 @@ no.nav.security.jwt:
       # proxyurl: http://webproxy-utvikler.nav.no:8088
 
 
-# logging.level.org.springframework: INFO
-# logging.level.no.nav: DEBUG
+#logging.level.org.springframework: INFO
+#logging.level.no.nav: DEBUG
 
 server:
   port: 8080
 
 spring:
   profiles:
-     active: local #nais # local
+     active: u1 #local #nais
   application:
     name: oebs-melosys-api-u1
 
   kafka:
-    retry-max-attempts: 10
-    retry-backoff-period: 30000
-    authorization-exception-retry-interval-secs: 60
-
     consumer:
-      group-id: "Oebs-Melosys-api-q1"
+      group-id: "Oebs-Melosys-api-u1"
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      topic: faktura-bestilt.v1-q2
+      topic: teammelosys.faktura-bestilt.v1-q2
       enable-auto-commit: false
       max-poll-records: 1
 
@@ -69,3 +65,9 @@ springdoc:
   swagger-ui:
     disable-swagger-default-url: true
     tags-sorter: alpha
+
+app:
+  kafka:
+    retry-max-attempts: '5'
+    authorization-exception-retry-interval-secs: '30'
+    retry-backoff-period-ms: '5000'

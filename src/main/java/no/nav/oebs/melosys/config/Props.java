@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Configuration
-@ConditionalOnProperty(prefix = "spring.profiles", name = "active", havingValue = "nais")
+@ConditionalOnProperty(prefix = "spring.profiles", name = "active", havingValue = "u1")
 public class Props {
 
     public static String configEnv(String fileName) {
@@ -28,10 +28,10 @@ public class Props {
 //    public static String appsUserPass      = configEnv("/secrets/oebs-p/apps-user/apps-password");
 //    public static String jdbcUrl           = configEnv("/secrets/oebs-p/jdbc-url/url");
 //    public static String appName           = configEnv("/secrets/oebs-p/app-name/app-name");
-    public static String appsUserName      = configEnv("/secrets/oebs-q1/apps-user/apps-username");
-    public static String appsUserPass      = configEnv("/secrets/oebs-q1/apps-user/apps-password");
-    public static String jdbcUrl           = configEnv("/secrets/oebs-q1/jdbc-url/url");
-    public static String appName           = configEnv("/secrets/oebs-q1/app-name/app-name");
+    public static String appsUserName      = configEnv("/secrets/oebsu1/apps-user/apps-username");
+    public static String appsUserPass      = configEnv("/secrets/oebsu1/apps-user/apps-password");
+    public static String jdbcUrl           = configEnv("/secrets/oebsu1/jdbc-url/url");
+    public static String appName           = configEnv("/secrets/oebsu1/app-name/app-name");
 
     public static void setProps() {
         System.setProperty("spring.datasource.username", appsUserName);
