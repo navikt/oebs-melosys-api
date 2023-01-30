@@ -26,9 +26,12 @@ public class FakturaConsumer {
             groupId = "${spring.kafka.consumer.group-id}")
     public void consumeMessages(ConsumerRecord<String, String> record, Acknowledgment acks) {
         // håndtere data her
+        System.out.println("LESER FRA KAFKA TOPIC...");
         log.info("Melding fra kafka topic: {}", record);
         String fakturaJson = record.value();
+        log.info("Melding hentet fra partition: {} med offset {}", record.partition(), record.offset());
         log.info("Json i String format: {}", fakturaJson);
+        acks.acknowledge();
         //PlsqlProcedureResult result = plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, fakturaJson);
 //        if (result.getMessageNumber() == 0)
 //            //acks.acknowledge();
@@ -38,5 +41,7 @@ public class FakturaConsumer {
 //        }
 
     }
+
+
 
 }

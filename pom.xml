@@ -4,7 +4,7 @@
 
     <groupId>no.nav.oebs</groupId>
     <artifactId>oebs-melosys-api-u1</artifactId>
-    <version>0.0.11-SNAPSHOT</version>
+    <version>0.0.25-SNAPSHOT</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -107,11 +107,11 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-
+<!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-quartz</artifactId>
-        </dependency>
+        </dependency> -->
 
         <!-- Metrics dependencies -->
         <dependency>

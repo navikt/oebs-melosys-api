@@ -11,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Configuration
-@ConditionalOnProperty(prefix = "spring.profiles", name = "active", havingValue = "u1")
 public class Props {
 
     public static String configEnv(String fileName) {

@@ -9,39 +9,39 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.quartz.SpringBeanJobFactory;
+//import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 
 import jakarta.annotation.PostConstruct;
 
-@Configuration
-@EnableAutoConfiguration
-@ConditionalOnExpression("'${using.spring.schedulerFactory}'=='true'")
-public class SpringQuartzScheduler {
-
-    Logger logger = LoggerFactory.getLogger(getClass());
-
-    @Autowired
-    private ApplicationContext applicationContext;
-
-    @PostConstruct
-    public void init() {
-        logger.info("Hello world from Spring...");
-    }
-
-    @Bean
-    public SpringBeanJobFactory springBeanJobFactory() {
-        AutoWiringSpringBeanJobFactory jobFactory = new AutoWiringSpringBeanJobFactory();
-        logger.debug("Konfigurering factory Job");
-
-        jobFactory.setApplicationContext(applicationContext);
-        return jobFactory;
-    }
-
-    /*@Bean
-    @QuartzDataSource
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource quartzDataSource() {
-        return DataSourceBuilder.create().build();
-    }*/
-
-}
+//@Configuration
+//@EnableAutoConfiguration
+//@ConditionalOnExpression("'${using.spring.schedulerFactory}'=='true'")
+//public class SpringQuartzScheduler {
+//
+//    Logger logger = LoggerFactory.getLogger(getClass());
+//
+//    @Autowired
+//    private ApplicationContext applicationContext;
+//
+//    @PostConstruct
+//    public void init() {
+//        logger.info("Hello world from Spring...");
+//    }
+//
+//    @Bean
+//    public SpringBeanJobFactory springBeanJobFactory() {
+//        AutoWiringSpringBeanJobFactory jobFactory = new AutoWiringSpringBeanJobFactory();
+//        logger.debug("Konfigurering factory Job");
+//
+//        jobFactory.setApplicationContext(applicationContext);
+//        return jobFactory;
+//    }
+//
+//    /*@Bean
+//    @QuartzDataSource
+//    @ConfigurationProperties(prefix = "spring.datasource")
+//    public DataSource quartzDataSource() {
+//        return DataSourceBuilder.create().build();
+//    }*/
+//
+//}

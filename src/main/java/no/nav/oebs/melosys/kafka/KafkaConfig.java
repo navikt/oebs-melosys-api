@@ -5,6 +5,7 @@ import java.util.Map;
 
 import no.nav.oebs.melosys.db.entity.Faktura;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -17,7 +18,7 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties.AckMode;
 import org.springframework.kafka.support.LogIfLevelEnabled;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
-
+import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 
 @EnableKafka
@@ -52,12 +53,18 @@ public class KafkaConfig {
     }
 
     private ConsumerFactory<String, String> kafkaConsumerFactory(KafkaProperties properties) {
-        Map<String, Object> consumerProperties = properties.buildConsumerProperties();
-        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-        consumerProperties.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
-        consumerProperties.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, StringDeserializer.class);
-        return new DefaultKafkaConsumerFactory<>(consumerProperties);
+        return new DefaultKafkaConsumerFactory<>(consumerProps(properties));
     }
 
+    private Map<String, Object> consumerProps(KafkaProperties properties) {
+        Map<String, Object> consumerProperties = properties.buildConsumerProperties();
+        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
+        return  consumerProperties;
+    }
+
+    private Map<String, Object> producerProps(KafkaProperties properties){
+        Map<String, Object> producerProperties = properties.buildProducerProperties();
+        return producerProperties;
+    }
 }

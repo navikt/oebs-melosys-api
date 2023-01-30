@@ -27,13 +27,13 @@ spring:
 
   kafka:
     consumer:
-      group-id: "Oebs-Melosys-api-u1"
+      group-id: "oebs-Melosys-api-u1"
       auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      #key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      #value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       topic: teammelosys.faktura-bestilt.v1-q2
       enable-auto-commit: false
-      max-poll-records: 1
+      #max-poll-records: 1
 
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
@@ -54,9 +54,9 @@ management:
         include: health, info, prometheus, metrics
 
 # Quartz
-using:
-  spring:
-    schedulerFactory: true
+# using:
+#  spring:
+#    schedulerFactory: true
 
 springdoc:
   packagesToScan: no.nav.oebs.melosys
@@ -71,3 +71,8 @@ app:
     retry-max-attempts: '5'
     authorization-exception-retry-interval-secs: '30'
     retry-backoff-period-ms: '5000'
+
+logging:
+  level:
+    org:
+      springframework: info
