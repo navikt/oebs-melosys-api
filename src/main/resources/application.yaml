@@ -21,19 +21,30 @@ server:
 
 spring:
   profiles:
-     active: u1 #local #nais
+     active: local #nais
   application:
     name: oebs-melosys-api-u1
 
   kafka:
     consumer:
-      group-id: "oebs-Melosys-api-u1"
+      group-id: oebs-melosys-api-u1-test1
       auto-offset-reset: earliest
-      #key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      #value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer #org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       topic: teammelosys.faktura-bestilt.v1-q2
       enable-auto-commit: false
-      #max-poll-records: 1
+      max-poll-records: 1
+#      properties:
+#        spring:
+#          json.default.type: no.nav.oebs.melosys.db.entity.FakturaTest
+#          deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      topic: team-oebs.faktura-status.v1-u1
+      retries: 5
+      client-id: oebs-faktura-status-producer-u1
 
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver

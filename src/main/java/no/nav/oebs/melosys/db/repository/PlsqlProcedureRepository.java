@@ -182,7 +182,7 @@ public class PlsqlProcedureRepository {
 		}
 	}
 
-	private void saveKallLogg(KallLogg kallLogg) {
+	public void saveKallLogg(KallLogg kallLogg) {
 		try {
 			kallLoggRepository.save(kallLogg);
 		} catch (Exception e) {

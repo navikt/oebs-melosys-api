@@ -1,0 +1,18 @@
+package no.nav.oebs.melosys.db.entity;
+
+
+import lombok.*;
+
+
+import java.math.BigDecimal;
+
+@Data
+@NoArgsConstructor
+public class FakturaLinje {
+
+    private String beskrivelse;
+    private Double antall;
+    private BigDecimal enhetspris;
+    private BigDecimal belop;
+
+}
