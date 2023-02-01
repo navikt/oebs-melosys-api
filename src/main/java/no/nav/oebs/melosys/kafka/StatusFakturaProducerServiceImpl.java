@@ -1,12 +1,24 @@
 package no.nav.oebs.melosys.kafka;
 
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.oebs.melosys.api.common.utils.ObjektMaps;
+import no.nav.oebs.melosys.config.common.logging.LoggingUtils;
 import no.nav.oebs.melosys.db.entity.FakturaStatus;
+import no.nav.oebs.melosys.db.entity.KallLogg;
+import no.nav.oebs.melosys.db.repository.PlsqlMessageCodes;
+import no.nav.oebs.melosys.db.repository.PlsqlProcedureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
+
+import java.text.MessageFormat;
+import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
+
+import static no.nav.oebs.melosys.config.common.mdc.MdcOperations.generateCorrelationId;
 
 @Slf4j
 @Service
@@ -15,13 +27,66 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
     @Autowired
     private KafkaTemplate<String, FakturaStatus> kafkaTemplate;
 
+    @Autowired
+    private PlsqlProcedureRepository plsqlProcedureRepository;
+
+    private static final String PLSQL_PROCEDURE = "prosedyrenavn_ut";
+
+    private ObjektMaps objektMaps = new ObjektMaps(new ObjectMapper());
+
     @Value("${spring.kafka.producer.topic}")
     private String topic;
 
+
     @Override
     public void send(FakturaStatus status) {
-        log.info("Melding sendt til kafka topic: {} \n Melding: {}", topic, status);
-        kafkaTemplate.send(topic ,status);
+        Exception exception = null;
+        long startTime = System.currentTimeMillis();
+        String dataOut = null;
+        CompletableFuture<SendResult<String, FakturaStatus>> future = kafkaTemplate.send(topic ,status);
+        try {
+            SendResult<String, FakturaStatus> sendeResultat = future.get();
+            dataOut = objektMaps.toJson(sendeResultat.getProducerRecord().value());
+            log.info("Melding sendt til kafka topic: {} \n Melding: {}", topic, dataOut);
+        } catch (InterruptedException e) {
+            exception = e;
+            Thread.currentThread().interrupt();
+            String msg = MessageFormat.format(
+                    "Avbrutt ved sending av faktura status med vedtaksId: {0} og fakturaref: {1}",
+                    status.getVedtaksId(), status.getFakturaReferanseNr());
+            throw new RuntimeException(msg ,e);
+        } catch (Exception e) {
+            exception = e;
+            String msg = MessageFormat.format(
+                    "Kunne ikke sende fakurastatus for vedtaksId: {0} og fakturaref: {1}",
+                    status.getVedtaksId(), status.getFakturaReferanseNr());
+            throw new RuntimeException(e);
+        } finally {
+            long endTime = System.currentTimeMillis();
+
+            plsqlProcedureRepository.saveKallLogg(
+                    KallLoggBuilder(PLSQL_PROCEDURE, dataOut, endTime-startTime, exception));
+        }
+
+    }
+
+    private KallLogg KallLoggBuilder(String procedureName, String dataOut, long executionTime, Exception exception) {
+        KallLogg kallLogg = KallLogg.builder()
+                .korrelasjonId(generateCorrelationId())
+                .tidspunkt(LocalDateTime.now())
+                .type(KallLogg.TYPE_KAFKA)
+                .kallRetning(KallLogg.RETNING_UT)
+                .operation(procedureName)
+                .status(exception != null ? Integer.valueOf(PlsqlMessageCodes.EXCEPTION)
+                        : Integer.valueOf(PlsqlMessageCodes.OK)) // PlsqlProcedureResult.getMessageNumber(result)
+                .kalltid(executionTime)
+                .request(dataOut)
+                .response(null)
+                .logginfo(exception != null ?
+                        LoggingUtils.formatExceptionAsString(exception)
+                        : "OK")
+                .build();
+        return kallLogg;
     }
 
 }

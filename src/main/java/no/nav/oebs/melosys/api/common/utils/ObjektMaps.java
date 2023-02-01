@@ -40,7 +40,7 @@ public class ObjektMaps {
 	/**
 	 * Mapper fra Java- til JSON-objekt.
 	 */
-	protected <T> String toJson(T object) {
+	public <T> String toJson(T object) {
 		try {
 			return objectMapper.writeValueAsString(object);
 		} catch (JsonProcessingException e) {

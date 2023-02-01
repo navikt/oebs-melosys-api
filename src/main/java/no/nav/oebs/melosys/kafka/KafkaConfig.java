@@ -3,11 +3,7 @@ package no.nav.oebs.melosys.kafka;
 import java.time.Duration;
 import java.util.Map;
 
-import no.nav.oebs.melosys.db.entity.Faktura;
 import no.nav.oebs.melosys.db.entity.FakturaStatus;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -16,9 +12,10 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.ContainerProperties.AckMode;
+import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.LogIfLevelEnabled;
-import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.util.backoff.FixedBackOff;
+import org.springframework.kafka.listener.CommonLoggingErrorHandler;
 
 
 @EnableKafka
@@ -48,6 +45,7 @@ public class KafkaConfig {
         // retries og backoff for commits
         factory.getContainerProperties().setCommitRetries(retryMaxAttempts);
         factory.getContainerProperties().setSyncCommitTimeout(Duration.ofMillis(retryBackoffPeriod));
+        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(1000L, 2L)));
         return factory;
     }
 
@@ -72,4 +70,6 @@ public class KafkaConfig {
     public KafkaTemplate<String, FakturaStatus> kafkaTemplate(KafkaProperties properties) {
         return new KafkaTemplate<>(producerFactory(properties));
     }
+
+    @Bean public CommonLoggingErrorHandler errorHandler() { return new CommonLoggingErrorHandler(); }
 }

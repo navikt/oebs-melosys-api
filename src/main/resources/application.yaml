@@ -30,14 +30,14 @@ spring:
       group-id: oebs-melosys-api-u1-test1
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer #org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       topic: teammelosys.faktura-bestilt.v1-q2
       enable-auto-commit: false
       max-poll-records: 1
-#      properties:
-#        spring:
-#          json.default.type: no.nav.oebs.melosys.db.entity.FakturaTest
-#          deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json.default.type: no.nav.oebs.melosys.db.entity.FakturaTest
+          deserializer.value.delegate.class: no.nav.oebs.melosys.kafka.FakturaDeserializer
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -58,6 +58,9 @@ spring:
         dialect: org.hibernate.dialect.Oracle12cDialect
     show-sql: false
     open-in-view: false
+  jackson:
+    parser:
+      allow-numeric-leading-zeros: true
 management:
   endpoints:
     web:

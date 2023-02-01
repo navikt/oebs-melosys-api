@@ -23,36 +23,26 @@ import static no.nav.oebs.melosys.config.common.mdc.MdcOperations.generateCorrel
 @Component
 public class FakturaConsumer {
 
-    private static final String PLSQL_PROCEDURE = "prosedyrenavn";
+    private static final String PLSQL_PROCEDURE = "prosedyrenavn_inn";
 
     @Autowired
     private PlsqlProcedureRepository plsqlProcedureRepository;
-
-    private ObjektMaps objektMaps = new ObjektMaps(new ObjectMapper());
 
     // TODO: PSLQL exception håndtering
     // TODO: KafkaListener exception håndtering
     @KafkaListener(topics = "${spring.kafka.consumer.topic}",
             groupId = "${spring.kafka.consumer.group-id}")
-    public void consumeMessages(ConsumerRecord<String, String> record, Acknowledgment acks) {
-        // håndtere data her
+    public void consumeMessages(ConsumerRecord<String, FakturaTest> record, Acknowledgment acks) {
         long startTime = System.currentTimeMillis();
         System.out.println("LESER FRA KAFKA TOPIC...");
-        log.info("Melding fra kafka topic: {}", record);
-        log.info("Melding hentet fra partition: {} med offset {}", record.partition(), record.offset());
-        log.info("Json i String format: {}", record.value());
+        log.info("Melding hentet fra partition: {} med offset {} fra topic {}", record.partition(), record.offset(), record.topic());
         //FakturaTest fakturaTest = objektMaps.toObject(record.value(), FakturaTest.class);
         //log.info("FAKTURA KLASSE: {}", fakturaTest.getClass() );
         long endTime = System.currentTimeMillis();
 
+        log.info(KallLoggBuilder(PLSQL_PROCEDURE, record.value().toString(), endTime - startTime, null).toString());
 
-        log.info("KorellasjonsID: {}" , generateCorrelationId());
-        log.info("Tidspunkt: {}", LocalDateTime.now());
-        log.info("Kall type: {}", KallLogg.TYPE_KAFKA);
-        log.info("Retning: {}", KallLogg.RETNING_INN);
-        log.info("ProsedyreNavn: {}", PLSQL_PROCEDURE);
-        log.info("Executiontime: {}", endTime-startTime);
-        plsqlProcedureRepository.saveKallLogg(KallLoggBuilder(PLSQL_PROCEDURE, record.value(), endTime - startTime, null ));
+        //plsqlProcedureRepository.saveKallLogg(KallLoggBuilder(PLSQL_PROCEDURE, record.value(), endTime - startTime, null ));
 
 
         //PlsqlProcedureResult result = plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, fakturaJson);
@@ -72,7 +62,7 @@ public class FakturaConsumer {
                 .kallRetning(KallLogg.RETNING_INN)
                 .operation(procedureName)
                 .status(exception != null ? Integer.valueOf(PlsqlMessageCodes.EXCEPTION)
-                        : 2) // PlsqlProcedureResult.getMessageNumber(result)
+                        : Integer.valueOf(PlsqlMessageCodes.OK)) // PlsqlProcedureResult.getMessageNumber(result)
                 .kalltid(executionTime)
                 .request(dataIn)
                 .response(null) // result != null ? result.getData() : null
