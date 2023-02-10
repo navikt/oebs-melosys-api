@@ -6,4 +6,6 @@ import java.util.concurrent.ExecutionException;
 
 public interface StatusFakturaProducerService {
     void send(FakturaStatus status) throws ExecutionException, InterruptedException;
+
+    void hentFakturaStatusOgSend();
 }

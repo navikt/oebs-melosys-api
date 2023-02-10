@@ -1,23 +1,22 @@
-package no.nav.oebs.melosys.exception;
+package no.nav.oebs.melosys.kafka;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.springframework.kafka.listener.ConsumerAwareListenerErrorHandler;
 import org.springframework.kafka.listener.ListenerExecutionFailedException;
 import org.springframework.messaging.Message;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 @Slf4j
-@Component
-public class fakturaErrorHandler implements ConsumerAwareListenerErrorHandler {
+@Service(value = "kafkaErrorHandler")
+public class KafkaErrorHandler implements ConsumerAwareListenerErrorHandler{
 
 
-    @Override
     public Object handleError(Message<?> message, ListenerExecutionFailedException e, Consumer<?, ?> consumer) {
-        log.error("Feil under lytting: {}", message, e.getCause());
-        Exception cause = (Exception) e.getCause();
-        if(cause instanceof Exception) {
-            // handle some exception
+        log.warn("Feil under lytting melding feilet: {} ,fordi {}", message.getPayload(), e.getCause());
+
+        if(e.getCause() instanceof RuntimeException) {
+            throw e;
         }
         return null;
     }

@@ -11,7 +11,6 @@ import org.apache.kafka.common.serialization.Deserializer;
 
 import java.io.IOException;
 
-
 public class FakturaDeserializer implements Deserializer<FakturaTest> {
 
     public static final ObjectMapper objectMapper = JsonMapper.builder()

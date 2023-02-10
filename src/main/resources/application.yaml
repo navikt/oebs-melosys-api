@@ -21,7 +21,7 @@ server:
 
 spring:
   profiles:
-     active: local #nais
+     active: u1 #local #nais
   application:
     name: oebs-melosys-api-u1
 
@@ -30,14 +30,14 @@ spring:
       group-id: oebs-melosys-api-u1-test1
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer #org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       topic: teammelosys.faktura-bestilt.v1-q2
       enable-auto-commit: false
       max-poll-records: 1
-      properties:
-        spring:
-          json.default.type: no.nav.oebs.melosys.db.entity.FakturaTest
-          deserializer.value.delegate.class: no.nav.oebs.melosys.kafka.FakturaDeserializer
+#      properties:
+#        spring:
+#          json.default.type: no.nav.oebs.melosys.db.entity.FakturaTest
+#          deserializer.value.delegate.class: no.nav.oebs.melosys.kafka.FakturaDeserializer
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -61,6 +61,7 @@ spring:
   jackson:
     parser:
       allow-numeric-leading-zeros: true
+
 management:
   endpoints:
     web:
@@ -68,9 +69,10 @@ management:
         include: health, info, prometheus, metrics
 
 # Quartz
-# using:
-#  spring:
-#    schedulerFactory: true
+using:
+  spring:
+    schedulerFactory: true
+
 
 springdoc:
   packagesToScan: no.nav.oebs.melosys

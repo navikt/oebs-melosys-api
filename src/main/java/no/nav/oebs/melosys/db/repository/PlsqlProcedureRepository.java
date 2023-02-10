@@ -170,7 +170,7 @@ public class PlsqlProcedureRepository {
 				.response(result != null ? result.getData() : null) //
 				.logginfo(exception != null //
 						? LoggingUtils.formatExceptionAsString(exception) //
-						: PlsqlProcedureResult.getMessage(result)) //
+						: PlsqlProcedureResult.getMessage(result))  //
 				.build();
 
 		// log.debug(kallLogg.toString());
@@ -184,9 +184,16 @@ public class PlsqlProcedureRepository {
 
 	public void saveKallLogg(KallLogg kallLogg) {
 		try {
+			log.info("lagrer KallLogg {}", kallLogg);
 			kallLoggRepository.save(kallLogg);
 		} catch (Exception e) {
 			log.error("Feil ved logging av kalloggdata til databasen; feilmelding=" + e.getMessage(), e);
 		}
+	}
+
+	public String generateAndSetCorrelationId() {
+		String correlationId = MdcOperations.generateCorrelationId();
+		MdcOperations.put(MdcOperations.MDC_CORRELATION_ID, correlationId);
+		return correlationId;
 	}
 }

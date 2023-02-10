@@ -8,6 +8,7 @@ import no.nav.oebs.melosys.db.entity.FakturaStatus;
 import no.nav.oebs.melosys.db.entity.KallLogg;
 import no.nav.oebs.melosys.db.repository.PlsqlMessageCodes;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureRepository;
+import no.nav.oebs.melosys.db.repository.PlsqlProcedureResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -30,7 +31,7 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
     @Autowired
     private PlsqlProcedureRepository plsqlProcedureRepository;
 
-    private static final String PLSQL_PROCEDURE = "prosedyrenavn_ut";
+    private static final String PLSQL_PROCEDURE = "xxrtv_mel_oebs_ve_v1.xxrtv_mel_faktura_status";
 
     private ObjektMaps objektMaps = new ObjektMaps(new ObjectMapper());
 
@@ -42,12 +43,14 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
     public void send(FakturaStatus status) {
         Exception exception = null;
         long startTime = System.currentTimeMillis();
+        String korrelasjonId = plsqlProcedureRepository.generateAndSetCorrelationId();
         String dataOut = null;
         CompletableFuture<SendResult<String, FakturaStatus>> future = kafkaTemplate.send(topic ,status);
         try {
             SendResult<String, FakturaStatus> sendeResultat = future.get();
             dataOut = objektMaps.toJson(sendeResultat.getProducerRecord().value());
             log.info("Melding sendt til kafka topic: {} \n Melding: {}", topic, dataOut);
+            //plsqlResult =
         } catch (InterruptedException e) {
             exception = e;
             Thread.currentThread().interrupt();
@@ -62,17 +65,31 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
                     status.getVedtaksId(), status.getFakturaReferanseNr());
             throw new RuntimeException(e);
         } finally {
+            log.info("Lagrer kallLogg");
+            log.info("dataOut: {}", dataOut);
             long endTime = System.currentTimeMillis();
-
             plsqlProcedureRepository.saveKallLogg(
-                    KallLoggBuilder(PLSQL_PROCEDURE, dataOut, endTime-startTime, exception));
+                    KallLoggBuilder(korrelasjonId ,PLSQL_PROCEDURE, dataOut, endTime-startTime, null, exception));
         }
 
     }
 
-    private KallLogg KallLoggBuilder(String procedureName, String dataOut, long executionTime, Exception exception) {
+    @Override
+    public void hentFakturaStatusOgSend() {
+        PlsqlProcedureResult result = plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, "");
+        FakturaStatus fakturaStatus = objektMaps.toObject(result.getMessage(), FakturaStatus.class);
+        if (result.getMessageNumber() == 0) {
+            log.info("Sender fakuraStatus til kafka: {}", fakturaStatus);
+            send(fakturaStatus);
+        } else {
+            log.error("Feil ved henting av fakuraStatus fra OeBS: {}, {}", result.getMessageNumber(), result.getMessage());
+            // log feilmelding
+        }
+    }
+
+    private KallLogg KallLoggBuilder(String korrelasjonId, String procedureName, String dataOut, long executionTime, PlsqlProcedureResult result, Exception exception) {
         KallLogg kallLogg = KallLogg.builder()
-                .korrelasjonId(generateCorrelationId())
+                .korrelasjonId(korrelasjonId)
                 .tidspunkt(LocalDateTime.now())
                 .type(KallLogg.TYPE_KAFKA)
                 .kallRetning(KallLogg.RETNING_UT)
@@ -82,9 +99,9 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
                 .kalltid(executionTime)
                 .request(dataOut)
                 .response(null)
-                .logginfo(exception != null ?
-                        LoggingUtils.formatExceptionAsString(exception)
-                        : "OK")
+                .logginfo(exception != null
+                        ? LoggingUtils.formatExceptionAsString(exception)
+                        : PlsqlProcedureResult.getMessage(result))
                 .build();
         return kallLogg;
     }

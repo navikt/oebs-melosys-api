@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class FakturaStatus {
 
-    private BigDecimal fodselsnummer;
+    private String fodselsnummer;
     private String vedtaksId;
     private String fakturaReferanseNr;
     private BigDecimal belop;

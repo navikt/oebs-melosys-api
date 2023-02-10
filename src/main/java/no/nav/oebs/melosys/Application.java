@@ -14,7 +14,6 @@ public class 	Application {
 
 	public static void main(String[] args) {
 		Props.setProps();
-		log.info("Spring boot starting...");
 		SpringApplication.run(Application.class, args);
 	}
 }

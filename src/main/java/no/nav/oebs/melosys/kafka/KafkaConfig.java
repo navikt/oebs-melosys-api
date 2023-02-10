@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.util.Map;
 
 import no.nav.oebs.melosys.db.entity.FakturaStatus;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -11,8 +13,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
+import org.springframework.kafka.listener.AcknowledgingConsumerAwareMessageListener;
 import org.springframework.kafka.listener.ContainerProperties.AckMode;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.LogIfLevelEnabled;
 import org.springframework.util.backoff.FixedBackOff;
 import org.springframework.kafka.listener.CommonLoggingErrorHandler;
@@ -42,6 +46,7 @@ public class KafkaConfig {
         factory.setConsumerFactory(kafkaConsumerFactory(properties));
         factory.getContainerProperties().setAckMode(AckMode.MANUAL_IMMEDIATE);
         factory.getContainerProperties().setCommitLogLevel(LogIfLevelEnabled.Level.INFO); // log commits av offset
+
         // retries og backoff for commits
         factory.getContainerProperties().setCommitRetries(retryMaxAttempts);
         factory.getContainerProperties().setSyncCommitTimeout(Duration.ofMillis(retryBackoffPeriod));
@@ -50,11 +55,13 @@ public class KafkaConfig {
     }
 
     private ConsumerFactory<String, String> kafkaConsumerFactory(KafkaProperties properties) {
+
         return new DefaultKafkaConsumerFactory<>(consumerProps(properties));
     }
 
     private Map<String, Object> consumerProps(KafkaProperties properties) {
         Map<String, Object> consumerProperties = properties.buildConsumerProperties();
+
         return  consumerProperties;
     }
     @Bean

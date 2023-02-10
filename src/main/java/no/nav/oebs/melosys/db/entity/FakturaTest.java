@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class FakturaTest {
 
-    private BigDecimal fodselsnummer;
+    private String fodselsnummer;
     private String fullmektigOrgnr;
     private BigDecimal fullmektigFnr;
     private String vedtaksId;
