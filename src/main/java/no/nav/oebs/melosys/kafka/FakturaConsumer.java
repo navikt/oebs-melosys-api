@@ -1,5 +1,6 @@
 package no.nav.oebs.melosys.kafka;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.oebs.melosys.config.common.logging.LoggingUtils;
 import no.nav.oebs.melosys.db.entity.KallLogg;
@@ -12,6 +13,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -41,15 +43,15 @@ public class FakturaConsumer {
         plsqlProcedureRepository.saveKallLogg(KallLoggBuilder(korrelasjonId, PLSQL_PROCEDURE, record.value(), endTime - startTime, null,null, kafkaPosition ));
         acks.acknowledge();
 
-        PlsqlProcedureResult result = plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, record.value());
-        if (result.getMessageNumber() == PlsqlMessageCodes.OK) {
-            acks.acknowledge();
-            log.info("Committing partition and offset: {},{}", record.partition(), record.offset());
-        } else if (result.getMessageNumber() == PlsqlMessageCodes.FEIL_I_INPUT) {
-            throw new UgyldigInputException("Feil i Json string ved lagring til databasen");
-        } else {
-            throw new RuntimeException("Ukjent feil oppstått ved lagring til databasen");
-        }
+//        PlsqlProcedureResult result = plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, record.value());
+//        if (result.getMessageNumber() == PlsqlMessageCodes.OK) {
+//            acks.acknowledge();
+//            log.info("Committing partition and offset: {},{}", record.partition(), record.offset());
+//        } else if (result.getMessageNumber() == PlsqlMessageCodes.FEIL_I_INPUT) {
+//            throw new UgyldigInputException("Feil i Json string ved lagring til databasen");
+//        } else {
+//            throw new RuntimeException("Ukjent feil oppstått ved lagring til databasen");
+//        }
 
     }
     private KallLogg KallLoggBuilder(String korrelasjonId, String procedureName, String dataIn, long executionTime, PlsqlProcedureResult result, Exception exception, String kafkaPosition){
