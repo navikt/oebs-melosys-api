@@ -4,11 +4,13 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ser.std.StringSerializer;
 import no.nav.oebs.melosys.db.entity.FakturaStatus;
+import no.nav.oebs.melosys.exception.InputValidationException;
+import no.nav.oebs.melosys.exception.JsonMappingException;
+import no.nav.oebs.melosys.exception.UgyldigInputException;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.TopicPartition;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -39,8 +41,7 @@ public class KafkaConfig {
     @Value("${app.kafka.authorization-exception-retry-interval-secs}")
     private long authorizationExceptionRetryIntervalSecs;
 
-    @Autowired
-    private KafkaTemplate<String, String> deadLetterTemplate;
+    private String deadLetterRecoveryTopic = "team-oebs.dead-letter-topic-faktura-bestilt-v1.u1";
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
@@ -59,12 +60,11 @@ public class KafkaConfig {
 
     @Bean
     public DefaultErrorHandler defaultErrorHandler() {
-        ConsumerRecordRecoverer recoverer = new DeadLetterPublishingRecoverer(deadLetterTemplate,
-                (consumerRecord, exception) -> new TopicPartition(consumerRecord.topic(),0));
+        ConsumerRecordRecoverer recoverer = new DeadLetterPublishingRecoverer(new KafkaTemplate<>(deadLetterProducerFactory()),
+                (consumerRecord, exception) -> new TopicPartition(deadLetterRecoveryTopic,0));
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer,
                 new FixedBackOff(1000, 10));
-
-        errorHandler.addNotRetryableExceptions(no.nav.oebs.melosys.exception.UgyldigInputException.class);
+        errorHandler.addNotRetryableExceptions(UgyldigInputException.class, JsonMappingException.class, InputValidationException.class);
         return errorHandler;
     }
 
@@ -88,23 +88,25 @@ public class KafkaConfig {
     }
 
     // TODO: DEADLETTER PRODUCER FACTORY
+    @Bean(name="deadLetterProducerFactory")
     public ProducerFactory<String, String> deadLetterProducerFactory(){
         return new DefaultKafkaProducerFactory<>(deadLetterProducerProps());
     }
     // TODO: DEADLETTER PRODUCER PROPPERTIES
-    private Map<String, Object> deadLetterProducerProps(){
+    @Bean(name = "deadLetterProducerProps")
+    protected Map<String, Object> deadLetterProducerProps(){
         Map<String, Object> producerProperties = new HashMap<>();
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "d26apbl007.test.local:9092");
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         return producerProperties;
     }
-    @Bean
-    public KafkaTemplate<String, String> kafkaTemplate() {
+    @Bean(name = "deadLetterTemplate")
+    public KafkaTemplate<String, String> deadLetterKafkaTemplate() {
         return new KafkaTemplate<>(deadLetterProducerFactory());
     }
 
-    @Bean
+    @Bean(name = "fakturaStatusTemplate")
     public KafkaTemplate<String, FakturaStatus> kafkaTemplate(KafkaProperties properties) {
         return new KafkaTemplate<>(producerFactory(properties));
     }

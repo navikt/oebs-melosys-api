@@ -33,12 +33,12 @@ public class FakturaConsumer {
             groupId = "${spring.kafka.consumer.group-id}", errorHandler = "kafkaErrorHandler")
     public void consumeMessages(ConsumerRecord<String, String> record, Acknowledgment acks) throws Exception {
         long startTime = System.currentTimeMillis();
+        Exception e = new UgyldigInputException("Hello world test exception!");
         String korrelasjonId = plsqlProcedureRepository.generateAndSetCorrelationId();
         String kafkaPosition = " partition: " + record.partition() + ", offset: " + record.offset() + ", message: ";
         System.out.println("LESER FRA KAFKA TOPIC...");
         log.info("Melding hentet fra partition: {} med offset {} fra topic {}", record.partition(), record.offset(), record.topic());
         long endTime = System.currentTimeMillis();
-
         //log.info(KallLoggBuilder(PLSQL_PROCEDURE, record.value().toString(), endTime - startTime, null).toString());
         plsqlProcedureRepository.saveKallLogg(KallLoggBuilder(korrelasjonId, PLSQL_PROCEDURE, record.value(), endTime - startTime, null,null, kafkaPosition ));
         acks.acknowledge();

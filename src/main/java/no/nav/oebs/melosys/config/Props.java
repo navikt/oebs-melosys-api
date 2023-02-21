@@ -2,7 +2,6 @@ package no.nav.oebs.melosys.config;
 
 import io.micrometer.core.instrument.util.IOUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.FileInputStream;

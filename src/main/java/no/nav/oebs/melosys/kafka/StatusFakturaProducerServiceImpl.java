@@ -10,6 +10,7 @@ import no.nav.oebs.melosys.db.repository.PlsqlMessageCodes;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureRepository;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -26,6 +27,7 @@ import static no.nav.oebs.melosys.config.common.mdc.MdcOperations.generateCorrel
 public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerService {
 
     @Autowired
+    @Qualifier("fakturaStatusTemplate")
     private KafkaTemplate<String, FakturaStatus> kafkaTemplate;
 
     @Autowired
