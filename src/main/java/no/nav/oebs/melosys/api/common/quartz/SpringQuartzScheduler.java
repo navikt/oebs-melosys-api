@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.quartz.QuartzDataSource;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +23,8 @@ import org.springframework.scheduling.quartz.JobDetailFactoryBean;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
 import org.springframework.scheduling.quartz.SpringBeanJobFactory;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableAutoConfiguration
@@ -45,15 +50,19 @@ public class SpringQuartzScheduler {
         return jobFactory;
     }
     @Bean
-    public SchedulerFactoryBean scheduler(Trigger trigger, JobDetail job) {
+    public SchedulerFactoryBean scheduler(Trigger trigger, JobDetail job, DataSource dataSource) {
         SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
         schedulerFactory.setConfigLocation(new ClassPathResource("quartz.properties"));
+
+        logger.debug("Setter datasource");
+        schedulerFactory.setDataSource(dataSource);
 
         logger.debug("Setter opp skedulering ...");
         schedulerFactory.setJobFactory(springBeanJobFactory());
 
         logger.debug("Setter JobDetails: {}", job);
         schedulerFactory.setJobDetails(job);
+
         logger.debug("Setter Trigger");
         schedulerFactory.setTriggers(trigger);
 
@@ -90,5 +99,7 @@ public class SpringQuartzScheduler {
         return DataSourceBuilder.create().build();
     }
     */
+
+
 
 }

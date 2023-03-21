@@ -1,12 +1,12 @@
 apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
-  name: oebs-melosys-api-t1
+  name: oebs-melosys-api-u1
   namespace: team-oebs
   labels:
     team: team-oebs
 spec:
-  image: repo.adeo.no:5443/oebs/oebs-melosys-api-t1:0.0.1
+  image: repo.adeo.no:5443/oebs/oebs-melosys-api-u1:0.1.0-SNAPSHOT
   port: 8080
   replicas:
     min: 2
