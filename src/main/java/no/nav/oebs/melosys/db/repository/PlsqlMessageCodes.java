@@ -20,3 +20,7 @@ public class PlsqlMessageCodes {
 
 	// ett felt hodenivå og linjenivå kall ID er fremmednøkkel
 }
+// kommet inn i Oracle bilagsnummer
+// ikke betalt
+// org id
+// org navn i hodenivå
