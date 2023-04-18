@@ -13,7 +13,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -27,7 +26,6 @@ public class FakturaConsumer {
     @Autowired
     private PlsqlProcedureRepository plsqlProcedureRepository;
 
-    // TODO: PSLQL exception håndtering
     // TODO: KafkaListener exception håndtering
     @KafkaListener(topics = "${spring.kafka.consumer.topic}",
             groupId = "${spring.kafka.consumer.group-id}", errorHandler = "kafkaErrorHandler")
@@ -39,6 +37,7 @@ public class FakturaConsumer {
         System.out.println("LESER FRA KAFKA TOPIC...");
         log.info("Melding hentet fra partition: {} med offset {} fra topic {}", record.partition(), record.offset(), record.topic());
         long endTime = System.currentTimeMillis();
+        //plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, record.value());
         //log.info(KallLoggBuilder(PLSQL_PROCEDURE, record.value().toString(), endTime - startTime, null).toString());
         plsqlProcedureRepository.saveKallLogg(KallLoggBuilder(korrelasjonId, PLSQL_PROCEDURE, record.value(), endTime - startTime, null,null, kafkaPosition ));
         acks.acknowledge();

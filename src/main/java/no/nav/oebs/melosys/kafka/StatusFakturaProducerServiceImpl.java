@@ -42,7 +42,7 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
 
 
     @Override
-    public void send(FakturaStatus status) {
+    public void sendFakturaStatus(FakturaStatus status) {
         Exception exception = null;
         long startTime = System.currentTimeMillis();
         String korrelasjonId = plsqlProcedureRepository.generateAndSetCorrelationId();
@@ -82,7 +82,7 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
         FakturaStatus fakturaStatus = objektMaps.toObject(result.getMessage(), FakturaStatus.class);
         if (result.getMessageNumber() == 0) {
             log.info("Sender fakuraStatus til kafka: {}", fakturaStatus);
-            send(fakturaStatus);
+            sendFakturaStatus(fakturaStatus);
         } else {
             log.error("Feil ved henting av fakuraStatus fra OeBS: {}, {}", result.getMessageNumber(), result.getMessage());
             // log feilmelding
