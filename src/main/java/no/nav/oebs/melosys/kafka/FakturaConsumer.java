@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 @Component
 public class FakturaConsumer {
 
-    private static final String PLSQL_PROCEDURE = "xxrtv_mel_oebs_ve_v1.xxrtv_mel_faktura_bestilt";
+    private static final String PLSQL_PROCEDURE = "xxrtv_ar_melosys_pkg.fakturaimport";
 
     @Autowired
     private PlsqlProcedureRepository plsqlProcedureRepository;
@@ -31,31 +31,26 @@ public class FakturaConsumer {
             groupId = "${spring.kafka.consumer.group-id}", errorHandler = "kafkaErrorHandler")
     public void consumeMessages(ConsumerRecord<String, String> record, Acknowledgment acks) throws Exception {
         long startTime = System.currentTimeMillis();
-        Exception e = new UgyldigInputException("Hello world test exception!");
-        String korrelasjonId = plsqlProcedureRepository.generateAndSetCorrelationId();
         String kafkaPosition = " partition: " + record.partition() + ", offset: " + record.offset() + ", message: ";
         System.out.println("LESER FRA KAFKA TOPIC...");
         log.info("Melding hentet fra partition: {} med offset {} fra topic {}", record.partition(), record.offset(), record.topic());
         long endTime = System.currentTimeMillis();
-        //plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, record.value());
-        //log.info(KallLoggBuilder(PLSQL_PROCEDURE, record.value().toString(), endTime - startTime, null).toString());
-        plsqlProcedureRepository.saveKallLogg(KallLoggBuilder(korrelasjonId, PLSQL_PROCEDURE, record.value(), endTime - startTime, null,null, kafkaPosition ));
-        acks.acknowledge();
+        plsqlProcedureRepository.saveKallLogg(KallLoggBuilder(PLSQL_PROCEDURE, record.value(), endTime - startTime, null,null, kafkaPosition ));
 
-//        PlsqlProcedureResult result = plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, record.value());
-//        if (result.getMessageNumber() == PlsqlMessageCodes.OK) {
-//            acks.acknowledge();
-//            log.info("Committing partition and offset: {},{}", record.partition(), record.offset());
-//        } else if (result.getMessageNumber() == PlsqlMessageCodes.FEIL_I_INPUT) {
-//            throw new UgyldigInputException("Feil i Json string ved lagring til databasen");
-//        } else {
-//            throw new RuntimeException("Ukjent feil oppstått ved lagring til databasen");
-//        }
+        PlsqlProcedureResult result = plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, record.value());
+        if (result.getMessageNumber() == PlsqlMessageCodes.OK) {
+            acks.acknowledge();
+            log.info("Committing partition and offset: {},{}", record.partition(), record.offset());
+        } else if (result.getMessageNumber() == PlsqlMessageCodes.FEIL_I_INPUT) {
+            throw new UgyldigInputException("Feil i Json string ved lagring til databasen");
+        } else {
+            throw new RuntimeException("Ukjent feil oppstått ved lagring til databasen");
+        }
 
     }
-    private KallLogg KallLoggBuilder(String korrelasjonId, String procedureName, String dataIn, long executionTime, PlsqlProcedureResult result, Exception exception, String kafkaPosition){
+    private KallLogg KallLoggBuilder(String procedureName, String dataIn, long executionTime, PlsqlProcedureResult result, Exception exception, String kafkaPosition){
         KallLogg kallLogg = KallLogg.builder()
-                .korrelasjonId(korrelasjonId)
+                .korrelasjonId(plsqlProcedureRepository.generateAndSetCorrelationId())
                 .tidspunkt(LocalDateTime.now())
                 .type(KallLogg.TYPE_KAFKA)
                 .kallRetning(KallLogg.RETNING_INN)
@@ -63,7 +58,7 @@ public class FakturaConsumer {
                 .status(exception != null ? Integer.valueOf(PlsqlMessageCodes.EXCEPTION)
                         : Integer.valueOf(PlsqlMessageCodes.OK)) // PlsqlProcedureResult.getMessageNumber(result)
                 .kalltid(executionTime)
-                .request(dataIn)
+                .request(LoggingUtils.maskIfFnr(dataIn))
                 .response(result != null ? result.getData() : null)
                 .logginfo(exception != null
                         ? kafkaPosition + LoggingUtils.formatExceptionAsString(exception)

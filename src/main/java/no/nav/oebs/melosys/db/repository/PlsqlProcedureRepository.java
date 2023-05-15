@@ -79,7 +79,7 @@ public class PlsqlProcedureRepository {
 			SimpleJdbcCall jdbcCall = getJdbcCall(procedureName, //
 					// new SqlParameter(ID_PARAM, Types.VARCHAR), //
 					new SqlParameter(DATA_IN_PARAM, Types.CLOB), //
-					new SqlOutParameter(DATA_OUT_PARAM, Types.CLOB), //
+					//new SqlOutParameter(DATA_OUT_PARAM, Types.CLOB), //
 					new SqlOutParameter(MESSAGE_NO_PARAM, Types.NUMERIC), //
 					new SqlOutParameter(MESSAGE_PARAM, Types.VARCHAR));
 
@@ -92,11 +92,13 @@ public class PlsqlProcedureRepository {
 			return result;
 		} catch (Exception e) {
 			exception = e;
-
+			System.out.println("EN FEIL HAR OPPSTÅTT");
 			throw e;
 		} finally {
 			long endTime = System.currentTimeMillis();
-
+			log.info("*************************");
+			log.info("Resultatet av kallet er {}", PlsqlProcedureResult.getMessage(result));
+			log.info("Logger prosedyrekall: ");
 			logProcedureCall(procedureName, dataIn, result, endTime - startTime, exception);
 		}
 	}
@@ -166,7 +168,7 @@ public class PlsqlProcedureRepository {
 						? Integer.valueOf(PlsqlMessageCodes.EXCEPTION) //
 						: PlsqlProcedureResult.getMessageNumber(result)) //
 				.kalltid(executionTime) //
-				.request(dataIn) //
+				.request(LoggingUtils.maskIfFnr(dataIn)) //
 				.response(result != null ? result.getData() : null) //
 				.logginfo(exception != null //
 						? LoggingUtils.formatExceptionAsString(exception) //
@@ -177,9 +179,9 @@ public class PlsqlProcedureRepository {
 
 		log.debug("Correlation ID:  '" + correlationId + "'");
 
-		if (correlationId == null)  {
-		   saveKallLogg(kallLogg);
-		}
+		//if (correlationId == null)  {
+		saveKallLogg(kallLogg);
+		//}
 	}
 
 	public void saveKallLogg(KallLogg kallLogg) {

@@ -33,7 +33,7 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
     @Autowired
     private PlsqlProcedureRepository plsqlProcedureRepository;
 
-    private static final String PLSQL_PROCEDURE = "xxrtv_mel_oebs_ve_v1.xxrtv_mel_faktura_status";
+    private static final String PLSQL_PROCEDURE = "xxrtv_ar_melosys_pkg.fakturastatus";
 
     private ObjektMaps objektMaps = new ObjektMaps(new ObjectMapper());
 
