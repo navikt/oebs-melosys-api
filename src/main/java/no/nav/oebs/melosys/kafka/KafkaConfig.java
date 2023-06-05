@@ -20,8 +20,8 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.*;
 import org.springframework.kafka.listener.ContainerProperties.AckMode;
+import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 import org.springframework.kafka.support.LogIfLevelEnabled;
-import org.springframework.util.backoff.FixedBackOff;
 
 
 @EnableKafka
@@ -41,7 +41,7 @@ public class KafkaConfig {
     @Value("${app.kafka.authorization-exception-retry-interval-secs}")
     private long authorizationExceptionRetryIntervalSecs;
 
-    private String deadLetterRecoveryTopic = "team-oebs.dead-letter-topic-faktura-bestilt-v1.u1";
+    private String deadLetterRecoveryTopic = "faktura-import-dlq.v1-u1";
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
@@ -62,9 +62,15 @@ public class KafkaConfig {
     public DefaultErrorHandler defaultErrorHandler() {
         ConsumerRecordRecoverer recoverer = new DeadLetterPublishingRecoverer(new KafkaTemplate<>(deadLetterProducerFactory()),
                 (consumerRecord, exception) -> new TopicPartition(deadLetterRecoveryTopic,0));
+        ExponentialBackOffWithMaxRetries backOffWithMaxRetries = new ExponentialBackOffWithMaxRetries(5);
+        backOffWithMaxRetries.setInitialInterval(1000);
+        backOffWithMaxRetries.setMultiplier(2);
+        backOffWithMaxRetries.setMaxInterval(10000);
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer,
-                new FixedBackOff(1000, 10));
+                /*new FixedBackOff(1000, 10)*/backOffWithMaxRetries);
         errorHandler.addNotRetryableExceptions(UgyldigInputException.class, JsonMappingException.class, InputValidationException.class);
+        errorHandler.setAckAfterHandle(true);
+        errorHandler.setCommitRecovered(true);
         return errorHandler;
     }
 
@@ -112,4 +118,5 @@ public class KafkaConfig {
     }
 
     @Bean public CommonLoggingErrorHandler errorHandler() { return new CommonLoggingErrorHandler(); }
+
 }

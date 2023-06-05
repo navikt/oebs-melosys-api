@@ -7,7 +7,6 @@ import no.nav.oebs.melosys.db.entity.KallLogg;
 import no.nav.oebs.melosys.db.repository.PlsqlMessageCodes;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureRepository;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureResult;
-import no.nav.oebs.melosys.exception.PlsqlException;
 import no.nav.oebs.melosys.exception.UgyldigInputException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +43,8 @@ public class FakturaConsumer {
         } else if (result.getMessageNumber() == PlsqlMessageCodes.FEIL_I_INPUT) {
             throw new UgyldigInputException("Feil i Json string ved lagring til databasen");
         } else {
-            throw new RuntimeException("Ukjent feil oppstått ved lagring til databasen");
+            Exception ex = new RuntimeException("Ukjent feil oppstått ved lagring til databasen");
+            throw ex;
         }
 
     }
