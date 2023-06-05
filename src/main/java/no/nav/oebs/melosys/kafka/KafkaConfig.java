@@ -1,16 +1,13 @@
 package no.nav.oebs.melosys.kafka;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
 
 import no.nav.oebs.melosys.db.entity.FakturaStatus;
 import no.nav.oebs.melosys.exception.InputValidationException;
 import no.nav.oebs.melosys.exception.JsonMappingException;
 import no.nav.oebs.melosys.exception.UgyldigInputException;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -41,7 +38,7 @@ public class KafkaConfig {
     @Value("${app.kafka.authorization-exception-retry-interval-secs}")
     private long authorizationExceptionRetryIntervalSecs;
 
-    private String deadLetterRecoveryTopic = "faktura-import-dlq.v1-u1";
+    private String deadLetterRecoveryTopic = "team-oebs.faktura-import-dlq.v1-u1";
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
@@ -54,15 +51,15 @@ public class KafkaConfig {
         // retries og backoff for commits
         factory.getContainerProperties().setCommitRetries(retryMaxAttempts);
         factory.getContainerProperties().setSyncCommitTimeout(Duration.ofMillis(retryBackoffPeriod));
-        factory.setCommonErrorHandler(defaultErrorHandler());
+        factory.setCommonErrorHandler(defaultErrorHandler(properties));
         return factory;
     }
 
     @Bean
-    public DefaultErrorHandler defaultErrorHandler() {
-        ConsumerRecordRecoverer recoverer = new DeadLetterPublishingRecoverer(new KafkaTemplate<>(deadLetterProducerFactory()),
+    public DefaultErrorHandler defaultErrorHandler(KafkaProperties properties) {
+        ConsumerRecordRecoverer recoverer = new DeadLetterPublishingRecoverer(new KafkaTemplate<>(deadLetterProducerFactory(properties)),
                 (consumerRecord, exception) -> new TopicPartition(deadLetterRecoveryTopic,0));
-        ExponentialBackOffWithMaxRetries backOffWithMaxRetries = new ExponentialBackOffWithMaxRetries(5);
+        ExponentialBackOffWithMaxRetries backOffWithMaxRetries = new ExponentialBackOffWithMaxRetries(retryMaxAttempts);
         backOffWithMaxRetries.setInitialInterval(1000);
         backOffWithMaxRetries.setMultiplier(2);
         backOffWithMaxRetries.setMaxInterval(10000);
@@ -95,21 +92,20 @@ public class KafkaConfig {
 
     // TODO: DEADLETTER PRODUCER FACTORY
     @Bean(name="deadLetterProducerFactory")
-    public ProducerFactory<String, String> deadLetterProducerFactory(){
-        return new DefaultKafkaProducerFactory<>(deadLetterProducerProps());
+    public ProducerFactory<String, String> deadLetterProducerFactory(KafkaProperties properties){
+        return new DefaultKafkaProducerFactory<>(deadLetterProducerProps(properties));
     }
+
     // TODO: DEADLETTER PRODUCER PROPPERTIES
     @Bean(name = "deadLetterProducerProps")
-    protected Map<String, Object> deadLetterProducerProps(){
-        Map<String, Object> producerProperties = new HashMap<>();
-        producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "d26apbl007.test.local:9092");
-        producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+    protected Map<String, Object> deadLetterProducerProps(KafkaProperties properties){
+        Map<String, Object> producerProperties = properties.buildProducerProperties();
         return producerProperties;
     }
+
     @Bean(name = "deadLetterTemplate")
-    public KafkaTemplate<String, String> deadLetterKafkaTemplate() {
-        return new KafkaTemplate<>(deadLetterProducerFactory());
+    public KafkaTemplate<String, String> deadLetterKafkaTemplate(KafkaProperties properties) {
+        return new KafkaTemplate<>(deadLetterProducerFactory(properties));
     }
 
     @Bean(name = "fakturaStatusTemplate")

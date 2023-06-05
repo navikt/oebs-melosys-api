@@ -42,7 +42,7 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all
-      topic: team-oebs.faktura-status.v1-u1
+      topic: team-oebs.faktura-status.v1-u1, team-oebs.faktura-import-dlq.v1-u1
       retries: 5
       client-id: oebs-faktura-status-producer-u1
 
