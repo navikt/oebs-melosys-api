@@ -2,17 +2,22 @@ package no.nav.oebs.melosys.db.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class FakturaStatus {
 
-    private String fodselsnummer;
-    private String vedtaksId;
     private String fakturaReferanseNr;
-    private BigDecimal belop;
+    private String fakturaNummer;
+    private LocalDateTime dato;
     private String status;
+    private BigDecimal fakturaBelop;
+    private BigDecimal ubetaltBelop;
+
 
 }

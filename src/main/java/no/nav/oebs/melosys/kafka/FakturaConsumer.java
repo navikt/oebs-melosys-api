@@ -1,19 +1,27 @@
 package no.nav.oebs.melosys.kafka;
 
+import com.fasterxml.jackson.core.json.JsonReadFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.oebs.melosys.config.common.logging.LoggingUtils;
+import no.nav.oebs.melosys.db.entity.FakturaLinje;
+import no.nav.oebs.melosys.db.entity.FakturaStatusFeilImport;
+import no.nav.oebs.melosys.db.entity.FakturaTest;
 import no.nav.oebs.melosys.db.entity.KallLogg;
 import no.nav.oebs.melosys.db.repository.PlsqlMessageCodes;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureRepository;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureResult;
 import no.nav.oebs.melosys.exception.UgyldigInputException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.errors.SerializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -24,6 +32,14 @@ public class FakturaConsumer {
 
     @Autowired
     private PlsqlProcedureRepository plsqlProcedureRepository;
+
+    private StatusFakturaProducerService fakturaStatusProducerService;
+
+    private static final ObjectMapper objectMapper = JsonMapper.builder()
+            .findAndAddModules()
+            .enable(JsonReadFeature.ALLOW_LEADING_ZEROS_FOR_NUMBERS.mappedFeature())
+            .build();
+
 
     // TODO: KafkaListener exception håndtering
     @KafkaListener(topics = "${spring.kafka.consumer.topic}",
@@ -40,8 +56,13 @@ public class FakturaConsumer {
         if (result.getMessageNumber() == PlsqlMessageCodes.OK) {
             acks.acknowledge();
             log.info("Committing partition and offset: {},{}", record.partition(), record.offset());
-        } else if (result.getMessageNumber() == PlsqlMessageCodes.FEIL_I_INPUT) {
-            throw new UgyldigInputException("Feil i Json string ved lagring til databasen");
+        } else if (result.getMessageNumber() == PlsqlMessageCodes.EXCEPTION) {
+            FakturaTest faktura = mapFaktura(record.value());
+            FakturaStatusFeilImport fakturaStatus = new FakturaStatusFeilImport(faktura.getFakturaReferanseNr(), result.getMessage());
+            fakturaStatusProducerService.sendFakturaStatusVedFeil(fakturaStatus);
+            acks.acknowledge();
+            log.info("Error in input: {}, errormessage: {}", record.value(), result.getMessage());
+            log.info("Committing partition and offset: {},{}", record.partition(), record.offset());
         } else {
             Exception ex = new RuntimeException("Ukjent feil oppstått ved lagring til databasen");
             throw ex;
@@ -67,6 +88,13 @@ public class FakturaConsumer {
         return kallLogg;
     }
 
+    private FakturaTest mapFaktura(String json) {
+        try {
+            return objectMapper.readValue(json, FakturaTest.class);
+        } catch (IOException e) {
+            throw new SerializationException(e);
+        }
+    }
 
 
 }

@@ -12,6 +12,9 @@ public class FakturaLinje {
 
     private String beskrivelse;
     private Double antall;
+    private BigDecimal inntekt;
+    private String dekning;
+    private String sats;
     private BigDecimal enhetspris;
     private BigDecimal belop;
 

@@ -19,11 +19,13 @@ public class FakturaDeserializer implements Deserializer<FakturaTest> {
             .build();
 
     @Override
-    public FakturaTest deserialize(String toupic, byte[] data) {
+    public FakturaTest deserialize(String topic, byte[] data) {
         try {
             return objectMapper.readValue(data, FakturaTest.class);
         } catch (IOException e) {
             throw new SerializationException(e);
         }
     }
+
+
 }

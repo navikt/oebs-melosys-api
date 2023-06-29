@@ -34,11 +34,9 @@ public class KafkaConfig {
     @Value("${app.kafka.retry-backoff-period-ms}")
     private long retryBackoffPeriod;
 
-    // Antall sekunder mellom hver gang Spring gjør retry ved AuthorizationException fra Kafka.
-    @Value("${app.kafka.authorization-exception-retry-interval-secs}")
-    private long authorizationExceptionRetryIntervalSecs;
-
-    private String deadLetterRecoveryTopic = "team-oebs.faktura-import-dlq.v1-u1";
+    @Value("${app.kafka.retry-interval-max-length}")
+    private long retryIntervalMaxLength;
+    private final String deadLetterRecoveryTopic = "team-oebs.faktura-import-dlq.v1-u1";
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
@@ -60,12 +58,12 @@ public class KafkaConfig {
         ConsumerRecordRecoverer recoverer = new DeadLetterPublishingRecoverer(new KafkaTemplate<>(deadLetterProducerFactory(properties)),
                 (consumerRecord, exception) -> new TopicPartition(deadLetterRecoveryTopic,0));
         ExponentialBackOffWithMaxRetries backOffWithMaxRetries = new ExponentialBackOffWithMaxRetries(retryMaxAttempts);
-        backOffWithMaxRetries.setInitialInterval(1000);
+        backOffWithMaxRetries.setInitialInterval(retryBackoffPeriod); // 30 sekunder
         backOffWithMaxRetries.setMultiplier(2);
-        backOffWithMaxRetries.setMaxInterval(10000);
+        backOffWithMaxRetries.setMaxInterval(retryIntervalMaxLength); // 10 minutter
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer,
                 /*new FixedBackOff(1000, 10)*/backOffWithMaxRetries);
-        errorHandler.addNotRetryableExceptions(UgyldigInputException.class, JsonMappingException.class, InputValidationException.class);
+        errorHandler.addNotRetryableExceptions(UgyldigInputException.class, JsonMappingException.class, InputValidationException.class, org.apache.kafka.common.errors.SerializationException.class, com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException.class);
         errorHandler.setAckAfterHandle(true);
         errorHandler.setCommitRecovered(true);
         return errorHandler;
@@ -90,13 +88,11 @@ public class KafkaConfig {
         return producerProperties;
     }
 
-    // TODO: DEADLETTER PRODUCER FACTORY
     @Bean(name="deadLetterProducerFactory")
     public ProducerFactory<String, String> deadLetterProducerFactory(KafkaProperties properties){
         return new DefaultKafkaProducerFactory<>(deadLetterProducerProps(properties));
     }
 
-    // TODO: DEADLETTER PRODUCER PROPPERTIES
     @Bean(name = "deadLetterProducerProps")
     protected Map<String, Object> deadLetterProducerProps(KafkaProperties properties){
         Map<String, Object> producerProperties = properties.buildProducerProperties();

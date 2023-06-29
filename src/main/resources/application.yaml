@@ -40,7 +40,7 @@ spring:
 #          deserializer.value.delegate.class: no.nav.oebs.melosys.kafka.FakturaDeserializer
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer #org.springframework.kafka.support.serializer.StringSerializer
       acks: all
       topic: team-oebs.faktura-status.v1-u1, team-oebs.faktura-import-dlq.v1-u1
       retries: 5
@@ -86,7 +86,8 @@ app:
   kafka:
     retry-max-attempts: '5'
     authorization-exception-retry-interval-secs: '30'
-    retry-backoff-period-ms: '5000'
+    retry-backoff-period-ms: '30000'
+    retry-interval-max-length: '600000'
 
 logging:
   level:

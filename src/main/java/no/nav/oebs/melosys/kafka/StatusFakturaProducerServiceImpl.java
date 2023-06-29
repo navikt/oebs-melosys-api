@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.oebs.melosys.api.common.utils.ObjektMaps;
 import no.nav.oebs.melosys.config.common.logging.LoggingUtils;
 import no.nav.oebs.melosys.db.entity.FakturaStatus;
+import no.nav.oebs.melosys.db.entity.FakturaStatusFeilImport;
 import no.nav.oebs.melosys.db.entity.KallLogg;
 import no.nav.oebs.melosys.db.repository.PlsqlMessageCodes;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureRepository;
@@ -57,14 +58,14 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
             exception = e;
             Thread.currentThread().interrupt();
             String msg = MessageFormat.format(
-                    "Avbrutt ved sending av faktura status med vedtaksId: {0} og fakturaref: {1}",
-                    status.getVedtaksId(), status.getFakturaReferanseNr());
+                    "Avbrutt ved sending av faktura status med fakturaref: {0}",
+                     status.getFakturaReferanseNr());
             throw new RuntimeException(msg ,e);
         } catch (Exception e) {
             exception = e;
             String msg = MessageFormat.format(
-                    "Kunne ikke sende fakurastatus for vedtaksId: {0} og fakturaref: {1}",
-                    status.getVedtaksId(), status.getFakturaReferanseNr());
+                    "Kunne ikke sende fakurastatus for  fakturaref: {0}",
+                    status.getFakturaReferanseNr());
             throw new RuntimeException(e);
         } finally {
             log.info("Lagrer kallLogg");
@@ -87,6 +88,10 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
             log.error("Feil ved henting av fakuraStatus fra OeBS: {}, {}", result.getMessageNumber(), result.getMessage());
             // log feilmelding
         }
+    }
+
+    public void sendFakturaStatusVedFeil(FakturaStatusFeilImport fakturaStatus) {
+        sendFakturaStatus(fakturaStatus);
     }
 
     private KallLogg KallLoggBuilder(String korrelasjonId, String procedureName, String dataOut, long executionTime, PlsqlProcedureResult result, Exception exception) {

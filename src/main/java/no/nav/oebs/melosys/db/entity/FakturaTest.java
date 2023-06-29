@@ -18,6 +18,7 @@ public class FakturaTest {
     private String referanseBruker;
     private String referanseNAV;
     private String beskrivelse;
+    private String artikkel;
     private List<FakturaLinje> fakturaLinjer;
     private LocalDate faktureringsDato;
 
