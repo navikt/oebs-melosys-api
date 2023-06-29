@@ -2,6 +2,7 @@ package no.nav.oebs.melosys.kafka;
 
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class FakturaConsumer {
     @Autowired
     private PlsqlProcedureRepository plsqlProcedureRepository;
 
+    @Autowired
     private StatusFakturaProducerService fakturaStatusProducerService;
 
     private static final ObjectMapper objectMapper = JsonMapper.builder()

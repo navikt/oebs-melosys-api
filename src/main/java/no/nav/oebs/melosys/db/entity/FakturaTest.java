@@ -1,5 +1,6 @@
 package no.nav.oebs.melosys.db.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ public class FakturaTest {
     private String beskrivelse;
     private String artikkel;
     private List<FakturaLinje> fakturaLinjer;
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDate faktureringsDato;
 
 }

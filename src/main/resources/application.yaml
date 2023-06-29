@@ -40,9 +40,9 @@ spring:
 #          deserializer.value.delegate.class: no.nav.oebs.melosys.kafka.FakturaDeserializer
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer #org.springframework.kafka.support.serializer.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer #org.springframework.kafka.support.serializer.StringSerializer
       acks: all
-      topic: team-oebs.faktura-status.v1-u1, team-oebs.faktura-import-dlq.v1-u1
+      topic: team-oebs.faktura-status.v1-u1
       retries: 5
       client-id: oebs-faktura-status-producer-u1
 
