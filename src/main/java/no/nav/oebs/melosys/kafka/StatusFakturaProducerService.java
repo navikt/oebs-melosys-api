@@ -10,5 +10,7 @@ public interface StatusFakturaProducerService {
 
     void hentFakturaStatusOgSend();
 
+    void hentOgSplitFakturaStatus();
+
     void sendFakturaStatusVedFeil(FakturaStatusFeilImport fakturaStatus);
 }

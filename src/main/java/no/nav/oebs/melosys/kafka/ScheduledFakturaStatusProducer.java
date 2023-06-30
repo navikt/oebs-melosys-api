@@ -14,7 +14,7 @@ public class ScheduledFakturaStatusProducer  implements Job{
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        //statusFakturaProducerService.hentFakturaStatusOgSend();
+        statusFakturaProducerService.hentOgSplitFakturaStatus();
     }
 
     // hent alle faktura status siden sist kjøring

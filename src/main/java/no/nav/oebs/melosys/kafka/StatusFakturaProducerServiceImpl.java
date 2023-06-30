@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import static no.nav.oebs.melosys.config.common.mdc.MdcOperations.generateCorrelationId;
 
@@ -92,6 +94,15 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
 
     public void sendFakturaStatusVedFeil(FakturaStatusFeilImport fakturaStatus) {
         sendFakturaStatus(fakturaStatus);
+    }
+
+    public void hentOgSplitFakturaStatus(){
+        PlsqlProcedureResult result = plsqlProcedureRepository.executeOutProcedure(PLSQL_PROCEDURE);
+        Stream<String> fakturaStatus = result.getData().lines();
+        int j = result.getMessageNumber();
+        AtomicInteger counter = new AtomicInteger();
+        fakturaStatus.forEach(s -> log.info("String {}: {}", counter.getAndIncrement(), s));
+        log.info("antall Json meldinger: {}, antall meldinger handtert {}", j, counter);
     }
 
     private KallLogg KallLoggBuilder(String korrelasjonId, String procedureName, String dataOut, long executionTime, PlsqlProcedureResult result, Exception exception) {
