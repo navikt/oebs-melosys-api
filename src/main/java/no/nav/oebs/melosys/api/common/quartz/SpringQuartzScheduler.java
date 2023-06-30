@@ -82,7 +82,7 @@ public class SpringQuartzScheduler {
 
     @Bean
     public SimpleTriggerFactoryBean fakuraStatusTrigger(@Qualifier("LevFakturaStatus") JobDetail job){
-        int frequencyInsec = 60*60*24;
+        int frequencyInsec = 60*60;
         SimpleTriggerFactoryBean trigger = new SimpleTriggerFactoryBean();
         trigger.setJobDetail(job);
         trigger.setStartDelay(1000);
