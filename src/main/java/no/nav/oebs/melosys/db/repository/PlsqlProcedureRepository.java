@@ -104,6 +104,50 @@ public class PlsqlProcedureRepository {
 	}
 
 	/**
+	 * Eksekverer spesifisert SQL/PL-prosedyre som har både input- og outputdata.
+	 * <p>
+	 * Formatet til prosedyren skal være:
+	 * <p>
+	 * <code>pakkenavn.prosedyrenavn(id VARCHAR2, data_out CLOB, msg_no NUMBER, msg VARCHAR2)</code>.
+	 *
+	 * @param procedureName
+	 *            navn på PL/SQL-prosedyren på formatet <code>pakkenavn.prosedyrenavn</code>
+	 *            inputdata til prosedyren.
+	 * @return Resultatet fra prosedyren.
+	 * @throws SQLException
+	 *             dersom det oppstår en feil relatert til clob-parameteren som returneres fra prosedyren.
+	 */
+	public PlsqlProcedureResult executeOutProcedure(String procedureName) {
+		PlsqlProcedureResult result = null;
+		Exception exception = null;
+		long startTime = System.currentTimeMillis();
+
+		try {
+
+			validateProcedureName(procedureName);
+
+			SimpleJdbcCall jdbcCall = getJdbcCall(procedureName, //
+					new SqlOutParameter(DATA_OUT_PARAM, Types.CLOB),
+					new SqlOutParameter(MESSAGE_NO_PARAM, Types.NUMERIC), //
+					new SqlOutParameter(MESSAGE_PARAM, Types.VARCHAR));
+
+			result = executeOutProcedure(jdbcCall);
+
+			return result;
+		} catch (Exception e) {
+			exception = e;
+			System.out.println("EN FEIL HAR OPPSTÅTT");
+			throw e;
+		} finally {
+			long endTime = System.currentTimeMillis();
+			log.info("*************************");
+			log.info("Resultatet av kallet er {}", PlsqlProcedureResult.getMessage(result));
+			log.info("Logger prosedyrekall: ");
+			logProcedureCall(procedureName,"", result, endTime - startTime, exception);
+		}
+	}
+
+	/**
 	 * Sjekker at formatet på prosedyrenavnet er korrekt. Kaster en <code>IllegalArgumentException</code> dersom ikke.
 	 */
 	private void validateProcedureName(String procedureName) {
@@ -149,6 +193,18 @@ public class PlsqlProcedureRepository {
 		return new PlsqlProcedureResult(dataOut, messageNumber, message);
 	}
 
+	/**
+	 * Eksekverer PL/SQL-prosedyren gitt ved SimpleJdbcCall-objektet og dekoder utparametere.
+	 */
+	private PlsqlProcedureResult executeOutProcedure(SimpleJdbcCall jdbcCall) {
+		Map<String, Object> outParams = jdbcCall.execute();
+
+		Clob dataOut = (Clob) outParams.get(DATA_OUT_PARAM);
+		BigDecimal messageNumber = (BigDecimal) outParams.get(MESSAGE_NO_PARAM);
+		String message = (String) outParams.get(MESSAGE_PARAM);
+
+		return new PlsqlProcedureResult(dataOut, messageNumber, message);
+	}
 	/**
 	 * Logger PL/SQL-prosedyrekallet til kalloggen.
 	 */
