@@ -21,7 +21,7 @@ public class FakturaTest {
     private String beskrivelse;
     private String artikkel;
     private List<FakturaLinje> fakturaLinjer;
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd")
     private LocalDate faktureringsDato;
 
 }
