@@ -52,16 +52,3 @@ spec:
         mountPath: "/secrets/oebs-q1/jdbc-url"
   ingresses:
      - "https://oebs-melosys-api-q1.dev.intern.nav.no"
-
----
-apiVersion: nais.io/v1
-kind: Alert
-metadata:
-  name: oebs-melosys-api-q1
-  namespace: team-oebs
-  labels:
-    team: team-oebs
-spec:
-  receivers:
-    slack:
-      channel: 'oebs-melosys-api'

@@ -51,16 +51,3 @@ spec:
 
   ingresses:
      - "https://oebs-melosys-api-t1.dev.intern.nav.no"
-
----
-apiVersion: nais.io/v1
-kind: Alert
-metadata:
-  name: oebs-melosys-api-t1
-  namespace: team-oebs
-  labels:
-    team: team-oebs
-spec:
-  receivers:
-    slack:
-      channel: 'oebs-melosys-api'
