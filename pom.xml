@@ -3,30 +3,28 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>no.nav.oebs</groupId>
-    <artifactId>oebs-melosys-api</artifactId>
-    <version>0.4.9</version>
+    <artifactId>oebs-melosys-api-u1</artifactId>
+    <version>1.1.10-</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.5</version>
+        <version>3.0.1</version>
         <relativePath/>
     </parent>
 
     <properties>
-        <java.version>18</java.version>
-
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
         <surefire.argLine>-Dfile.encoding=UTF-8</surefire.argLine>
         <surefire.coverage.argLine/>
 
         <!-- NAV artifacts -->
-        <token-validation.version>2.1.6</token-validation.version>
+        <token-validation.version>3.0.2</token-validation.version>
         <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
-        <nimbus-jose-jwt.version>9.25.6</nimbus-jose-jwt.version>
-        <springdoc-openapi.version>1.6.12</springdoc-openapi.version>
+        <nimbus-jose-jwt.version>9.28</nimbus-jose-jwt.version>
+        <springdoc-openapi.version>1.6.14</springdoc-openapi.version>
         <sonar-maven-plugin.version>3.9.1.2184</sonar-maven-plugin.version>
     </properties>
 
@@ -47,16 +45,36 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jetty</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.servlet</groupId>
+                    <artifactId>jakarta.servlet-api</artifactId>
+                </exclusion></exclusions>
         </dependency>
-
+        <!-- Spring Boot starter jetty trenger version 5.0.0 i spring boot 3.0.x er version 6.0.0 inkludert -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
         <dependency>
@@ -67,10 +85,14 @@
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
-            <version>3.0.1</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!-- Automatisk reload ved kodeendringer -->
+        <!-- Gir warning om manglende fil i jdbc oracle driver ved oppstart -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -95,11 +117,11 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-
+<!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-quartz</artifactId>
-        </dependency>
+        </dependency> -->
 
         <!-- Metrics dependencies -->
         <dependency>
@@ -151,6 +173,12 @@
             <version>${nimbus-jose-jwt.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.14.2</version>
+        </dependency>
+
         <!-- Commons -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -184,7 +212,6 @@
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     </configuration>
                 </plugin>
-
                 <plugin>
                     <groupId>org.sonarsource.scanner.maven</groupId>
                     <artifactId>sonar-maven-plugin</artifactId>

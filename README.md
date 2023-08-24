@@ -1,2 +1,2 @@
-# oebs api mot melosys kafka løsning 
+# oebs api mot melosys kafka lÃ¸sning 
 REST API'er tilbudt av Oebs.

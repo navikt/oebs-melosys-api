@@ -20,8 +20,9 @@ public class ObjektMaps {
 	protected ObjektMaps() {
 	}
 
-	protected ObjektMaps(ObjectMapper objectMapper) {
+	public ObjektMaps(ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;
+		objectMapper.findAndRegisterModules();
 	}
 
 	/**
@@ -39,7 +40,7 @@ public class ObjektMaps {
 	/**
 	 * Mapper fra Java- til JSON-objekt.
 	 */
-	protected <T> String toJson(T object) {
+	public <T> String toJson(T object) {
 		try {
 			return objectMapper.writeValueAsString(object);
 		} catch (JsonProcessingException e) {
@@ -50,7 +51,7 @@ public class ObjektMaps {
 	/**
 	 * Mapper fra JSON- til Java-objekt.
 	 */
-	protected <T> T toObject(String json, Class<T> valueType) {
+	public <T> T toObject(String json, Class<T> valueType) {
 		try {
 			return objectMapper.readValue(json, valueType);
 		} catch (JsonProcessingException e) {

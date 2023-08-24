@@ -6,10 +6,10 @@ metadata:
   labels:
     team: team-oebs
 spec:
-  image: repo.adeo.no:5443/oebs/oebs-melosys-api-u1:0.0.1
+  image: repo.adeo.no:5443/oebs/oebs-melosys-api-u1:1.1.10
   port: 8080
   replicas:
-    min: 2
+    min: 1
     max: 4
     cpuThresholdPercentage: 50
   liveness:
@@ -27,6 +27,8 @@ spec:
     limits:
       cpu: 4000m
       memory: 2048Mi
+  kafka:
+    pool: nav-dev
   azure:
     application:
       enabled: true
@@ -51,38 +53,3 @@ spec:
         mountPath: "/secrets/oebsu1/jdbc-url"
   ingresses:
      - "https://oebs-melosys-api-u1.dev.intern.nav.no"
-
----
-apiVersion: nais.io/v1
-kind: Alert
-metadata:
-  name: oebs-melosys-api-u1
-  namespace: team-oebs
-  labels:
-    team: team-oebs
-spec:
-  receivers:
-    slack:
-      channel: 'ebs'
-  alerts:
-    - alert: oebs-api-ve-u1_T2_applikasjonsinstanser nede
-      expr: kube_deployment_status_replicas_unavailable{deployment=~"oebs-melosys-api.*"} > 0
-      for: 2m
-      description: >
-        *\{{ $labels.deployment }}* har utilgjengelige applikasjonsinstanser (podder)
-      action: >
-        Kjør `kubectl describe pod -l app=\{{ $labels.deployment }} -n \{{ $labels.namespace }}` for å se events,
-        evt. kjør først `kubectl get pods -l app=\{{ $labels.deployment }} -n \{{ $labels.namespace }}` for en oversikt over poddene.
-        Sjekk også Kibana for eventuelle feil som er logget;
-        query `application:\{{ $labels.deployment }} AND (level:Error OR level:Warning)`.
-      severity: danger
-    - alert: oebs-melosys-api-u1_feil er logget
-      expr: sum(increase(logd_messages_total{log_app=~"oebs-melosys-api.*",log_level="Error"}[10m])) by (log_app, log_namespace) > 0
-      for: 3m
-      description: >
-        *\{{ $labels.log_app }}* har logget feil med loggnivå Error
-      action: >
-        Antall feil målt over siste 10 minutter er *\{{ $value }}*.
-        Sjekk Kibana for detaljer om feil som er logget;
-        query `application:\{{ $labels.log_app }} AND (level:Error OR level:Warning)`.
-      severity: danger

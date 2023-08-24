@@ -1,7 +1,7 @@
 package no.nav.oebs.melosys.db.repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import no.nav.oebs.melosys.db.entity.KallLogg;
 import org.springframework.stereotype.Repository;
@@ -17,7 +17,7 @@ public class KallLoggRepositoryImpl implements KallLoggRepositoryCustom {
 
 	@Override
 	public void pingKallLogg() {
-		entityManager.createQuery("SELECT k FROM KallLogg k WHERE kall_logg_id = 0", KallLogg.class) //
+		entityManager.createQuery("SELECT k FROM KallLogg k WHERE k.id is null", KallLogg.class) //
 				.getResultList();
 	}
 }

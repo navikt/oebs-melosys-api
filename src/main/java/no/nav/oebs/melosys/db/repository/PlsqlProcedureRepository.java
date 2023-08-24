@@ -79,7 +79,7 @@ public class PlsqlProcedureRepository {
 			SimpleJdbcCall jdbcCall = getJdbcCall(procedureName, //
 					// new SqlParameter(ID_PARAM, Types.VARCHAR), //
 					new SqlParameter(DATA_IN_PARAM, Types.CLOB), //
-					new SqlOutParameter(DATA_OUT_PARAM, Types.CLOB), //
+					//new SqlOutParameter(DATA_OUT_PARAM, Types.CLOB), //
 					new SqlOutParameter(MESSAGE_NO_PARAM, Types.NUMERIC), //
 					new SqlOutParameter(MESSAGE_PARAM, Types.VARCHAR));
 
@@ -92,12 +92,58 @@ public class PlsqlProcedureRepository {
 			return result;
 		} catch (Exception e) {
 			exception = e;
-
+			System.out.println("EN FEIL HAR OPPSTÅTT");
 			throw e;
 		} finally {
 			long endTime = System.currentTimeMillis();
-
+			log.info("*************************");
+			log.info("Resultatet av kallet er {}", PlsqlProcedureResult.getMessage(result));
+			log.info("Logger prosedyrekall: ");
 			logProcedureCall(procedureName, dataIn, result, endTime - startTime, exception);
+		}
+	}
+
+	/**
+	 * Eksekverer spesifisert SQL/PL-prosedyre som har både input- og outputdata.
+	 * <p>
+	 * Formatet til prosedyren skal være:
+	 * <p>
+	 * <code>pakkenavn.prosedyrenavn(id VARCHAR2, data_out CLOB, msg_no NUMBER, msg VARCHAR2)</code>.
+	 *
+	 * @param procedureName
+	 *            navn på PL/SQL-prosedyren på formatet <code>pakkenavn.prosedyrenavn</code>
+	 *            inputdata til prosedyren.
+	 * @return Resultatet fra prosedyren.
+	 * @throws SQLException
+	 *             dersom det oppstår en feil relatert til clob-parameteren som returneres fra prosedyren.
+	 */
+	public PlsqlProcedureResult executeOutProcedure(String procedureName) {
+		PlsqlProcedureResult result = null;
+		Exception exception = null;
+		long startTime = System.currentTimeMillis();
+
+		try {
+
+			validateProcedureName(procedureName);
+
+			SimpleJdbcCall jdbcCall = getJdbcCall(procedureName, //
+					new SqlOutParameter(DATA_OUT_PARAM, Types.CLOB),
+					new SqlOutParameter(MESSAGE_NO_PARAM, Types.NUMERIC), //
+					new SqlOutParameter(MESSAGE_PARAM, Types.VARCHAR));
+
+			result = executeOutProcedure(jdbcCall);
+
+			return result;
+		} catch (Exception e) {
+			exception = e;
+			System.out.println("EN FEIL HAR OPPSTÅTT");
+			throw e;
+		} finally {
+			long endTime = System.currentTimeMillis();
+			log.info("*************************");
+			log.info("Resultatet av kallet er {}", PlsqlProcedureResult.getMessage(result));
+			log.info("Logger prosedyrekall: ");
+			logProcedureCall(procedureName,"", result, endTime - startTime, exception);
 		}
 	}
 
@@ -148,6 +194,18 @@ public class PlsqlProcedureRepository {
 	}
 
 	/**
+	 * Eksekverer PL/SQL-prosedyren gitt ved SimpleJdbcCall-objektet og dekoder utparametere.
+	 */
+	private PlsqlProcedureResult executeOutProcedure(SimpleJdbcCall jdbcCall) {
+		Map<String, Object> outParams = jdbcCall.execute();
+
+		Clob dataOut = (Clob) outParams.get(DATA_OUT_PARAM);
+		BigDecimal messageNumber = (BigDecimal) outParams.get(MESSAGE_NO_PARAM);
+		String message = (String) outParams.get(MESSAGE_PARAM);
+
+		return new PlsqlProcedureResult(dataOut, messageNumber, message);
+	}
+	/**
 	 * Logger PL/SQL-prosedyrekallet til kalloggen.
 	 */
 	private void logProcedureCall(String procedureName, String dataIn, PlsqlProcedureResult result, long executionTime,
@@ -166,27 +224,34 @@ public class PlsqlProcedureRepository {
 						? Integer.valueOf(PlsqlMessageCodes.EXCEPTION) //
 						: PlsqlProcedureResult.getMessageNumber(result)) //
 				.kalltid(executionTime) //
-				.request(dataIn) //
+				.request(LoggingUtils.maskIfFnr(dataIn)) //
 				.response(result != null ? result.getData() : null) //
 				.logginfo(exception != null //
 						? LoggingUtils.formatExceptionAsString(exception) //
-						: PlsqlProcedureResult.getMessage(result)) //
+						: PlsqlProcedureResult.getMessage(result))  //
 				.build();
 
 		// log.debug(kallLogg.toString());
 
 		log.debug("Correlation ID:  '" + correlationId + "'");
 
-		if (correlationId == null)  {
-		   saveKallLogg(kallLogg);
-		}
+		//if (correlationId == null)  {
+		saveKallLogg(kallLogg);
+		//}
 	}
 
-	private void saveKallLogg(KallLogg kallLogg) {
+	public void saveKallLogg(KallLogg kallLogg) {
 		try {
+			log.info("lagrer KallLogg {}", kallLogg);
 			kallLoggRepository.save(kallLogg);
 		} catch (Exception e) {
 			log.error("Feil ved logging av kalloggdata til databasen; feilmelding=" + e.getMessage(), e);
 		}
+	}
+
+	public String generateAndSetCorrelationId() {
+		String correlationId = MdcOperations.generateCorrelationId();
+		MdcOperations.put(MdcOperations.MDC_CORRELATION_ID, correlationId);
+		return correlationId;
 	}
 }

@@ -7,14 +7,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import no.nav.oebs.melosys.db.entity.KallLogg;
 import no.nav.oebs.melosys.config.common.mdc.MdcOperations;
 import no.nav.oebs.melosys.db.repository.KallLoggRepository;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -52,7 +53,7 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
 	}
 
 	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+	protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain)
 			throws ServletException, IOException {
 
 		long startTime = System.currentTimeMillis();
@@ -88,9 +89,9 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
 					.response(formattedResponse) //
 					.build();
 
-			// log.debug(kallLogg.toString());
+			log.debug(kallLogg.toString());
 
-			saveKallLogg(kallLogg);
+			//saveKallLogg(kallLogg);
 		}
 	}
 
@@ -204,7 +205,7 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
 
 	private void formatHeaders(StringBuilder builder, HttpHeaders headers) {
 		for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-			builder.append(entry.getKey() + ": ");
+			builder.append(entry.getKey()).append(": ");
 
 			List<String> values = entry.getValue();
 
