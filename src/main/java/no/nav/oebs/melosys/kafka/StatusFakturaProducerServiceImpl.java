@@ -19,16 +19,15 @@ import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
-
-import static no.nav.oebs.melosys.config.common.mdc.MdcOperations.generateCorrelationId;
 
 @Slf4j
 @Service
 public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerService {
 
+    private static final String KAFKA_INN_FEIL = "FEIL VED IMPORT";
     @Autowired
     @Qualifier("fakturaStatusTemplate")
     private KafkaTemplate<String, FakturaStatus> kafkaTemplate;
@@ -38,14 +37,14 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
 
     private static final String PLSQL_PROCEDURE = "xxrtv_ar_melosys_pkg.fakturastatus";
 
-    private ObjektMaps objektMaps = new ObjektMaps(new ObjectMapper());
+    private final ObjektMaps objektMaps = new ObjektMaps(new ObjectMapper());
 
     @Value("${spring.kafka.producer.topic}")
     private String topic;
 
 
     @Override
-    public void sendFakturaStatus(FakturaStatus status) {
+    public void sendFakturaStatus(FakturaStatus status, PlsqlProcedureResult result, String procedureName) {
         Exception exception = null;
         long startTime = System.currentTimeMillis();
         String korrelasjonId = plsqlProcedureRepository.generateAndSetCorrelationId();
@@ -55,7 +54,6 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
             SendResult<String, FakturaStatus> sendeResultat = future.get();
             dataOut = objektMaps.toJson(sendeResultat.getProducerRecord().value());
             log.info("Melding sendt til kafka topic: {} \n Melding: {}", topic, dataOut);
-            //plsqlResult =
         } catch (InterruptedException e) {
             exception = e;
             Thread.currentThread().interrupt();
@@ -66,47 +64,38 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
         } catch (Exception e) {
             exception = e;
             String msg = MessageFormat.format(
-                    "Kunne ikke sende fakurastatus for  fakturaref: {0}",
+                    "Kunne ikke sende fakurastatus for fakturaref: {0}",
                     status.getFakturaReferanseNr());
-            throw new RuntimeException(e);
+            throw new RuntimeException(msg, e);
         } finally {
             log.info("Lagrer kallLogg");
             log.info("dataOut: {}", dataOut);
             long endTime = System.currentTimeMillis();
             plsqlProcedureRepository.saveKallLogg(
-                    KallLoggBuilder(korrelasjonId ,PLSQL_PROCEDURE, dataOut, endTime-startTime, null, exception));
-        }
-
-    }
-
-    @Override
-    public void hentFakturaStatusOgSend() {
-        PlsqlProcedureResult result = plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, "");
-        FakturaStatus fakturaStatus = objektMaps.toObject(result.getMessage(), FakturaStatus.class);
-        if (result.getMessageNumber() == 0) {
-            log.info("Sender fakuraStatus til kafka: {}", fakturaStatus);
-            sendFakturaStatus(fakturaStatus);
-        } else {
-            log.error("Feil ved henting av fakuraStatus fra OeBS: {}, {}", result.getMessageNumber(), result.getMessage());
-            // log feilmelding
+                    KallLoggBuilder(korrelasjonId , procedureName, dataOut, endTime-startTime, result, exception));
         }
     }
 
     public void sendFakturaStatusVedFeil(FakturaStatusFeilImport fakturaStatus) {
-        sendFakturaStatus(fakturaStatus);
+        sendFakturaStatus(fakturaStatus, null, KAFKA_INN_FEIL);
     }
 
     public void hentOgSplitFakturaStatus(){
         PlsqlProcedureResult result = plsqlProcedureRepository.executeOutProcedure(PLSQL_PROCEDURE);
-        Stream<String> fakturaStatus = result.getData().lines();
-        int j = result.getMessageNumber();
-        AtomicInteger counter = new AtomicInteger();
-        fakturaStatus.forEach(s -> log.info("String {}: {}", counter.getAndIncrement(), s));
-        log.info("antall Json meldinger: {}, antall meldinger handtert {}", j, counter);
+        if(!result.getData().isEmpty()) {
+            Stream<String> fakturaStatusStream = result.getData().lines();
+            List<String> fakturaStatus = fakturaStatusStream.toList();
+            int i = 1;
+            log.info("Antall fakturaStatus meldinger: {}", fakturaStatus.size());
+            for (String s : fakturaStatus) {
+                log.info("FakturaStatus nr {}: {} ", i++, s);
+                sendFakturaStatus(objektMaps.toObject(s, FakturaStatus.class), result, PLSQL_PROCEDURE);
+            }
+        }
     }
 
     private KallLogg KallLoggBuilder(String korrelasjonId, String procedureName, String dataOut, long executionTime, PlsqlProcedureResult result, Exception exception) {
-        KallLogg kallLogg = KallLogg.builder()
+        return KallLogg.builder()
                 .korrelasjonId(korrelasjonId)
                 .tidspunkt(LocalDateTime.now())
                 .type(KallLogg.TYPE_KAFKA)
@@ -121,7 +110,5 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
                         ? LoggingUtils.formatExceptionAsString(exception)
                         : PlsqlProcedureResult.getMessage(result))
                 .build();
-        return kallLogg;
     }
-
 }
