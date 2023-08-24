@@ -8,8 +8,6 @@ import java.util.concurrent.ExecutionException;
 public interface StatusFakturaProducerService {
     void sendFakturaStatus(FakturaStatus status) throws ExecutionException, InterruptedException;
 
-    void hentFakturaStatusOgSend();
-
     void hentOgSplitFakturaStatus();
 
     void sendFakturaStatusVedFeil(FakturaStatusFeilImport fakturaStatus);
