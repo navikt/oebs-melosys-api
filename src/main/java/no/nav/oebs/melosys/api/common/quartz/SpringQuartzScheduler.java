@@ -8,9 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.quartz.QuartzDataSource;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +22,7 @@ import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
 import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 
 @Configuration
 @EnableAutoConfiguration
@@ -50,7 +48,7 @@ public class SpringQuartzScheduler {
         return jobFactory;
     }
     @Bean
-    public SchedulerFactoryBean scheduler(Trigger trigger, JobDetail job, DataSource dataSource) {
+    public SchedulerFactoryBean scheduler(Trigger trigger, JobDetail job, DataSource dataSource) throws SQLException {
         SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
         schedulerFactory.setConfigLocation(new ClassPathResource("quartz.properties"));
 
@@ -82,7 +80,7 @@ public class SpringQuartzScheduler {
 
     @Bean
     public SimpleTriggerFactoryBean fakuraStatusTrigger(@Qualifier("LevFakturaStatus") JobDetail job){
-        int frequencyInsec = 60*60;
+        int frequencyInsec = 60*5;
         SimpleTriggerFactoryBean trigger = new SimpleTriggerFactoryBean();
         trigger.setJobDetail(job);
         trigger.setStartDelay(1000);

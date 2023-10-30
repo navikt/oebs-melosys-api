@@ -34,10 +34,7 @@ spring:
       topic: teammelosys.faktura-bestilt.v1-q2
       enable-auto-commit: false
       max-poll-records: 1
-#      properties:
-#        spring:
-#          json.default.type: no.nav.oebs.melosys.db.entity.FakturaTest
-#          deserializer.value.delegate.class: no.nav.oebs.melosys.kafka.FakturaDeserializer
+
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer #org.springframework.kafka.support.serializer.StringSerializer
@@ -55,12 +52,14 @@ spring:
       ddl-auto: none
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.Oracle12cDialect
-    show-sql: false
+        dialect: org.hibernate.dialect.OracleDialect
+    show-sql: true
     open-in-view: false
   jackson:
     parser:
       allow-numeric-leading-zeros: true
+  quartz:
+    job-store-type: jdbc
 
 management:
   endpoints:
