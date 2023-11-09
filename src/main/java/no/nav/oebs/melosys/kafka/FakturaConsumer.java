@@ -43,7 +43,7 @@ public class FakturaConsumer {
             .build();
 
 
-    // TODO: KafkaListener exception håndtering
+
     @KafkaListener(topics = "${spring.kafka.consumer.topic}",
             groupId = "${spring.kafka.consumer.group-id}", errorHandler = "kafkaErrorHandler")
     public void consumeMessages(ConsumerRecord<String, String> record, Acknowledgment acks) throws Exception {

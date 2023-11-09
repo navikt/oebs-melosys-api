@@ -1,0 +1,18 @@
+spring:
+  kafka:
+    consumer:
+      group-id: oebs-melosys-api-t1
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      topic: teammelosys.faktura-bestilt.v1-q1
+      enable-auto-commit: false
+      max-poll-records: 1
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      topic: team-oebs.faktura-status.v1-q1
+      retries: 5
+      client-id: oebs-faktura-status-producer-q1

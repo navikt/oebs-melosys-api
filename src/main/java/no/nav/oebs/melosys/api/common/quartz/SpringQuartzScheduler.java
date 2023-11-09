@@ -64,7 +64,6 @@ public class SpringQuartzScheduler {
         logger.debug("Setter Trigger");
         schedulerFactory.setTriggers(trigger);
 
-
         return schedulerFactory;
     }
 
@@ -89,15 +88,5 @@ public class SpringQuartzScheduler {
         trigger.setName("Qrtz_Trigger_LevFakuraStatus");
         return trigger;
     }
-
-    /*
-    @QuartzDataSource
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource quartzDataSource() {
-        return DataSourceBuilder.create().build();
-    }
-    */
-
-
 
 }

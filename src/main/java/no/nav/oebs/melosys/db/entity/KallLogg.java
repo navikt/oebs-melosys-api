@@ -41,8 +41,8 @@ public class KallLogg {
 	public static final String TYPE_KAFKA = "KAFKA";
 
 	@Id
-	@SequenceGenerator(name = "XXRTV_API_SEQ", sequenceName = "XXRTV_API_SEQ", allocationSize = 1)
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "XXRTV_API_SEQ")
+	@SequenceGenerator(name = "XXRTV_MEL_SEQ", sequenceName = "XXRTV_MEL_SEQ", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "XXRTV_MEL_SEQ")
 	@Column(name = "KALL_LOGG_ID")
 	private Long id;
 

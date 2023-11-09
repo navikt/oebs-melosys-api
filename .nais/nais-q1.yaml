@@ -6,7 +6,7 @@ metadata:
   labels:
     team: team-oebs
 spec:
-  image: repo.adeo.no:5443/oebs_q2/oebs-melosys-api-u1:1.1.10
+  image: repo.adeo.no:5443/oebs/oebs-melosys-api-u1:1.1.17
   port: 8080
   replicas:
     min: 2
@@ -27,6 +27,8 @@ spec:
     limits:
       cpu: 4000m
       memory: 2048Mi
+  kafka:
+    pool: nav-dev
   azure:
     application:
       enabled: true
@@ -36,8 +38,6 @@ spec:
          - application: oebs-melosys-api-q1
            namespace: team-oebs
            cluster: dev-fss
-  kafka:
-    pool: nav-dev
   prometheus:
     enabled: true
     path: /actuator/prometheus
