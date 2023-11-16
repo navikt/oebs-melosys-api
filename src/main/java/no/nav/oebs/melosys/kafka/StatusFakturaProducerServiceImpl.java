@@ -82,7 +82,7 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
 
     public void hentOgSplitFakturaStatus(){
         PlsqlProcedureResult result = plsqlProcedureRepository.executeOutProcedure(PLSQL_PROCEDURE);
-        if(!result.getData().isEmpty()) {
+        if(result.getData() != null && !result.getData().isEmpty()) {
             Stream<String> fakturaStatusStream = result.getData().lines();
             List<String> fakturaStatus = fakturaStatusStream.toList();
             int i = 1;

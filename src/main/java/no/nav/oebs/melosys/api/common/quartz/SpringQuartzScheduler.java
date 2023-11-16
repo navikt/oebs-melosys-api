@@ -1,9 +1,7 @@
 package no.nav.oebs.melosys.api.common.quartz;
 
 import no.nav.oebs.melosys.kafka.ScheduledFakturaStatusProducer;
-import org.quartz.JobDetail;
-import org.quartz.SimpleTrigger;
-import org.quartz.Trigger;
+import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -16,10 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.scheduling.quartz.JobDetailFactoryBean;
-import org.springframework.scheduling.quartz.SchedulerFactoryBean;
-import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
-import org.springframework.scheduling.quartz.SpringBeanJobFactory;
+import org.springframework.scheduling.quartz.*;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -48,7 +43,10 @@ public class SpringQuartzScheduler {
         return jobFactory;
     }
     @Bean
-    public SchedulerFactoryBean scheduler(Trigger trigger, JobDetail job, DataSource dataSource) throws SQLException {
+    public SchedulerFactoryBean scheduler(@Qualifier("fakturaStatusTrigger") Trigger trigger1,
+                                          @Qualifier("fakturaStatusTriggerOnStartup") Trigger trigger2,
+                                          JobDetail job,
+                                          DataSource dataSource) throws SQLException {
         SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
         schedulerFactory.setConfigLocation(new ClassPathResource("quartz.properties"));
 
@@ -62,7 +60,7 @@ public class SpringQuartzScheduler {
         schedulerFactory.setJobDetails(job);
 
         logger.debug("Setter Trigger");
-        schedulerFactory.setTriggers(trigger);
+        schedulerFactory.setTriggers(trigger1, trigger2);
 
         return schedulerFactory;
     }
@@ -78,7 +76,7 @@ public class SpringQuartzScheduler {
     }
 
     @Bean
-    public SimpleTriggerFactoryBean fakuraStatusTrigger(@Qualifier("LevFakturaStatus") JobDetail job){
+    public SimpleTriggerFactoryBean fakturaStatusTrigger(@Qualifier("LevFakturaStatus") JobDetail job){
         int frequencyInsec = 60*5;
         SimpleTriggerFactoryBean trigger = new SimpleTriggerFactoryBean();
         trigger.setJobDetail(job);
@@ -86,6 +84,17 @@ public class SpringQuartzScheduler {
         trigger.setRepeatInterval(frequencyInsec * 1000); // millisekunder
         trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
         trigger.setName("Qrtz_Trigger_LevFakuraStatus");
+        return trigger;
+    }
+
+    @Bean
+    public SimpleTriggerFactoryBean fakturaStatusTriggerOnStartup(@Qualifier("LevFakturaStatus") JobDetail job){
+        SimpleTriggerFactoryBean trigger = new SimpleTriggerFactoryBean();
+        trigger.setJobDetail(job);
+        trigger.setStartDelay(0L);
+        trigger.setRepeatCount(0);
+        trigger.setName("Qrtz_Trigger_LevFakuraStatusOnStartUp");
+        trigger.afterPropertiesSet();
         return trigger;
     }
 
