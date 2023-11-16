@@ -20,7 +20,7 @@ server:
 
 spring:
   profiles:
-     active: u1 #local #nais
+     active: q1 #u1 #local #nais
   application:
     name: oebs-melosys-api-u1
 
