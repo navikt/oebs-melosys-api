@@ -6,7 +6,7 @@ metadata:
   labels:
     team: team-oebs
 spec:
-  image: repo.adeo.no:5443/oebs_q2/oebs-melosys-api-u1:1.1.10
+  image: repo.adeo.no:5443/oebs/oebs-melosys-api-q1:1.2.11
   port: 8080
   replicas:
     min: 2
@@ -27,6 +27,8 @@ spec:
     limits:
       cpu: 4000m
       memory: 2048Mi
+  kafka:
+    pool: nav-dev
   azure:
     application:
       enabled: true
@@ -36,8 +38,6 @@ spec:
          - application: oebs-melosys-api-q1
            namespace: team-oebs
            cluster: dev-fss
-  kafka:
-    pool: nav-dev
   prometheus:
     enabled: true
     path: /actuator/prometheus
@@ -45,10 +45,10 @@ spec:
     enabled: true
     paths:
       - kvPath: "kv/preprod/fss/oebs-melosys-api-q1/team-oebs/apps-user"
-        mountPath: "/secrets/oebs-q1/apps-user"
+        mountPath: "/secrets/oebsq1/apps-user"
       - kvPath: "kv/preprod/fss/oebs-melosys-api-q1/team-oebs/app-name"
-        mountPath: "/secrets/oebs-q1/app-name"
+        mountPath: "/secrets/oebsq1/app-name"
       - kvPath: "kv/preprod/fss/oebs-melosys-api-q1/team-oebs/jdbc-url"
-        mountPath: "/secrets/oebs-q1/jdbc-url"
+        mountPath: "/secrets/oebsq1/jdbc-url"
   ingresses:
      - "https://oebs-melosys-api-q1.dev.intern.nav.no"

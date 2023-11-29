@@ -1,5 +1,6 @@
 package no.nav.oebs.melosys.db.entity;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -13,7 +14,8 @@ public class FakturaTest {
     private String fodselsnummer;
     private String fullmektigOrgnr;
     private BigDecimal fullmektigFnr;
-    private String vedtaksId;
+    @JsonAlias("vedtaksId")
+    private String fakturaserieReferanse;
     private String fakturaReferanseNr;
     private String kreditReferanseNr;
     private String referanseBruker;

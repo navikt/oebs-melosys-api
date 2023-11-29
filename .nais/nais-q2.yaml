@@ -1,15 +1,15 @@
 apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
-  name: oebs-melosys-api
+  name: oebs-melosys-api-q2
   namespace: team-oebs
   labels:
     team: team-oebs
 spec:
-  image: repo.adeo.no:5443/oebs_p/oebs-melosys-api-prod:1.2.15
+  image: repo.adeo.no:5443/oebs/oebs-melosys-api-q2:1.2.14
   port: 8080
   replicas:
-    min: 3
+    min: 2
     max: 4
     cpuThresholdPercentage: 50
   liveness:
@@ -27,27 +27,28 @@ spec:
     limits:
       cpu: 4000m
       memory: 2048Mi
+  kafka:
+    pool: nav-dev
   azure:
     application:
       enabled: true
   accessPolicy:
     inbound:
       rules:
-         - application: oebs-melosys-api
+         - application: oebs-melosys-api-q2
            namespace: team-oebs
-           cluster: prod-fss
-
+           cluster: dev-fss
   prometheus:
     enabled: true
     path: /actuator/prometheus
   vault:
     enabled: true
     paths:
-      - kvPath: "kv/prod/fss/oebs-melosys-api/team-oebs/apps-user"
-        mountPath: "/secrets/oebs-p/apps-user"
-      - kvPath: "kv/prod/fss/oebs-melosys-api/team-oebs/app-name"
-        mountPath: "/secrets/oebs-p/app-name"
-      - kvPath: "kv/prod/fss/oebs-melosys-api/team-oebs/jdbc-url"
-        mountPath: "/secrets/oebs-p/jdbc-url"
+      - kvPath: "kv/preprod/fss/oebs-melosys-api-q2/team-oebs/apps-user"
+        mountPath: "/secrets/oebsq2/apps-user"
+      - kvPath: "kv/preprod/fss/oebs-melosys-api-q2/team-oebs/app-name"
+        mountPath: "/secrets/oebsq2/app-name"
+      - kvPath: "kv/preprod/fss/oebs-melosys-api-q2/team-oebs/jdbc-url"
+        mountPath: "/secrets/oebsq2/jdbc-url"
   ingresses:
-     - "https://oebs-melosys-api.intern.nav.no"
+     - "https://oebs-melosys-api-q2.dev.intern.nav.no"

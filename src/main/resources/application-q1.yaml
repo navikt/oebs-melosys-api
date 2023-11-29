@@ -14,7 +14,7 @@ spring:
           password: ${KAFKA_CREDSTORE_PASSWORD}
         endpoint.identification.algorithm:
     consumer:
-      group-id: oebs-melosys-api-u1
+      group-id: oebs-melosys-api-q1
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -26,6 +26,6 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all
-      topic: team-oebs.faktura-status.v1-u1
+      topic: team-oebs.faktura-status.v1-q1
       retries: 5
-      client-id: oebs-faktura-status-producer-u1
+      client-id: oebs-faktura-status-producer-q1

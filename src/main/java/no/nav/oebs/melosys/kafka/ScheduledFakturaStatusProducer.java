@@ -17,9 +17,4 @@ public class ScheduledFakturaStatusProducer  implements Job{
         statusFakturaProducerService.hentOgSplitFakturaStatus();
     }
 
-    // hent alle faktura status siden sist kjøring
-
-    // send alle faktura status til topic
-
-    // lagre i kallLogg
 }

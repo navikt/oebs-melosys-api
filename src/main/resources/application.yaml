@@ -12,39 +12,14 @@ no.nav.security.jwt:
       #  accepted_audience: srv_oebs
       # proxyurl: http://webproxy-utvikler.nav.no:8088
 
-
-#logging.level.org.springframework: INFO
-#logging.level.no.nav: DEBUG
-
 server:
   port: 8080
 
 spring:
   profiles:
-     active: u1 #local #nais
+     active: prod #q1 #u1 #local
   application:
-    name: oebs-melosys-api-u1
-
-  kafka:
-    consumer:
-      group-id: oebs-melosys-api-u1
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer #org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
-      topic: teammelosys.faktura-bestilt.v1-q2
-      enable-auto-commit: false
-      max-poll-records: 1
-#      properties:
-#        spring:
-#          json.default.type: no.nav.oebs.melosys.db.entity.FakturaTest
-#          deserializer.value.delegate.class: no.nav.oebs.melosys.kafka.FakturaDeserializer
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer #org.springframework.kafka.support.serializer.StringSerializer
-      acks: all
-      topic: team-oebs.faktura-status.v1-u1
-      retries: 5
-      client-id: oebs-faktura-status-producer-u1
+    name: oebs-melosys-api
 
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
@@ -55,12 +30,14 @@ spring:
       ddl-auto: none
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.Oracle12cDialect
+        dialect: org.hibernate.dialect.OracleDialect
     show-sql: false
     open-in-view: false
   jackson:
     parser:
       allow-numeric-leading-zeros: true
+  quartz:
+    job-store-type: jdbc
 
 management:
   endpoints:
@@ -72,7 +49,6 @@ management:
 using:
   spring:
     schedulerFactory: true
-
 
 springdoc:
   packagesToScan: no.nav.oebs.melosys

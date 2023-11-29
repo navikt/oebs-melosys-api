@@ -1,16 +1,11 @@
 package no.nav.oebs.melosys.api.common.quartz;
 
 import no.nav.oebs.melosys.kafka.ScheduledFakturaStatusProducer;
-import org.quartz.JobDetail;
-import org.quartz.SimpleTrigger;
-import org.quartz.Trigger;
+import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.quartz.QuartzDataSource;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,12 +14,11 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.scheduling.quartz.JobDetailFactoryBean;
-import org.springframework.scheduling.quartz.SchedulerFactoryBean;
-import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
-import org.springframework.scheduling.quartz.SpringBeanJobFactory;
+import org.springframework.scheduling.quartz.*;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
+import java.util.Date;
 
 @Configuration
 @EnableAutoConfiguration
@@ -50,7 +44,10 @@ public class SpringQuartzScheduler {
         return jobFactory;
     }
     @Bean
-    public SchedulerFactoryBean scheduler(Trigger trigger, JobDetail job, DataSource dataSource) {
+    public SchedulerFactoryBean scheduler(@Qualifier("fakturaStatusTrigger") Trigger trigger1,
+                                          @Qualifier("fakturaStatusTriggerOnStartup") Trigger trigger2,
+                                          JobDetail job,
+                                          DataSource dataSource) throws SQLException {
         SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
         schedulerFactory.setConfigLocation(new ClassPathResource("quartz.properties"));
 
@@ -64,8 +61,7 @@ public class SpringQuartzScheduler {
         schedulerFactory.setJobDetails(job);
 
         logger.debug("Setter Trigger");
-        schedulerFactory.setTriggers(trigger);
-
+        schedulerFactory.setTriggers(trigger1, trigger2);
 
         return schedulerFactory;
     }
@@ -81,25 +77,27 @@ public class SpringQuartzScheduler {
     }
 
     @Bean
-    public SimpleTriggerFactoryBean fakuraStatusTrigger(@Qualifier("LevFakturaStatus") JobDetail job){
-        int frequencyInsec = 60*60;
+    public SimpleTriggerFactoryBean fakturaStatusTrigger(@Qualifier("LevFakturaStatus") JobDetail job){
+        int frequencyInsec = 60;
+        Date startTime = DateBuilder.todayAt(8, 30, 0);
         SimpleTriggerFactoryBean trigger = new SimpleTriggerFactoryBean();
         trigger.setJobDetail(job);
-        trigger.setStartDelay(1000);
-        trigger.setRepeatInterval(frequencyInsec * 1000); // millisekunder
+        trigger.setStartTime(startTime);
+        trigger.setRepeatInterval(frequencyInsec * 60 * 24 * 1000); // en gang i døgnet
         trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
         trigger.setName("Qrtz_Trigger_LevFakuraStatus");
         return trigger;
     }
 
-    /*
-    @QuartzDataSource
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource quartzDataSource() {
-        return DataSourceBuilder.create().build();
+    @Bean
+    public SimpleTriggerFactoryBean fakturaStatusTriggerOnStartup(@Qualifier("LevFakturaStatus") JobDetail job){
+        SimpleTriggerFactoryBean trigger = new SimpleTriggerFactoryBean();
+        trigger.setJobDetail(job);
+        trigger.setStartDelay(0L);
+        trigger.setRepeatCount(0);
+        trigger.setName("Qrtz_Trigger_LevFakuraStatusOnStartUp");
+        trigger.afterPropertiesSet();
+        return trigger;
     }
-    */
-
-
 
 }

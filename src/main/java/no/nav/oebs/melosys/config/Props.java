@@ -21,15 +21,20 @@ public class Props {
         }
         return null;
     }
+//    public static String appsUserName      = configEnv("/secrets/oebsq2/apps-user/apps-username");
+//    public static String appsUserPass      = configEnv("/secrets/oebsq2/apps-user/apps-password");
+//    public static String jdbcUrl           = configEnv("/secrets/oebsq2/jdbc-url/url");
+//    public static String appName           = configEnv("/secrets/oebsq2/app-name/app-name");
 
-//    public static String appsUserName      = configEnv("/secrets/oebs-p/apps-user/apps-username");
-//    public static String appsUserPass      = configEnv("/secrets/oebs-p/apps-user/apps-password");
-//    public static String jdbcUrl           = configEnv("/secrets/oebs-p/jdbc-url/url");
-//    public static String appName           = configEnv("/secrets/oebs-p/app-name/app-name");
-    public static String appsUserName      = configEnv("/secrets/oebsu1/apps-user/apps-username");
-    public static String appsUserPass      = configEnv("/secrets/oebsu1/apps-user/apps-password");
-    public static String jdbcUrl           = configEnv("/secrets/oebsu1/jdbc-url/url");
-    public static String appName           = configEnv("/secrets/oebsu1/app-name/app-name");
+    public static String appsUserName      = configEnv("/secrets/oebs-p/apps-user/apps-username");
+    public static String appsUserPass      = configEnv("/secrets/oebs-p/apps-user/apps-password");
+    public static String jdbcUrl           = configEnv("/secrets/oebs-p/jdbc-url/url");
+    public static String appName           = configEnv("/secrets/oebs-p/app-name/app-name");
+
+//    public static String appsUserName      = configEnv("/secrets/oebsq1/apps-user/apps-username");
+//    public static String appsUserPass      = configEnv("/secrets/oebsq1/apps-user/apps-password");
+//    public static String jdbcUrl           = configEnv("/secrets/oebsq1/jdbc-url/url");
+//    public static String appName           = configEnv("/secrets/oebsq1/app-name/app-name");
 
     public static void setProps() {
         System.setProperty("spring.datasource.username", appsUserName);
