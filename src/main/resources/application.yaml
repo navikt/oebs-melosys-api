@@ -12,17 +12,14 @@ no.nav.security.jwt:
       #  accepted_audience: srv_oebs
       # proxyurl: http://webproxy-utvikler.nav.no:8088
 
-
-
-
 server:
   port: 8080
 
 spring:
   profiles:
-     active: q1 #u1 #local #nais
+     active: prod #q1 #u1 #local
   application:
-    name: oebs-melosys-api-u1
+    name: oebs-melosys-api
 
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
@@ -52,7 +49,6 @@ management:
 using:
   spring:
     schedulerFactory: true
-
 
 springdoc:
   packagesToScan: no.nav.oebs.melosys

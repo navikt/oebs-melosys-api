@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>no.nav.oebs</groupId>
-    <artifactId>oebs-melosys-api-q1</artifactId>
-    <version>1.2.7</version>
+    <artifactId>oebs-melosys-api-prod</artifactId>
+    <version>1.2.15</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -117,11 +117,6 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-<!--
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-quartz</artifactId>
-        </dependency> -->
 
         <!-- Metrics dependencies -->
         <dependency>
@@ -224,13 +219,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <profiles>
-                        <profile>local</profile>
-                    </profiles>
-                    <jvmArguments>
-                    </jvmArguments>
-                </configuration>
+                <version>3.0.1</version>
             </plugin>
         </plugins>
 

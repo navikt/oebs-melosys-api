@@ -18,6 +18,7 @@ import org.springframework.scheduling.quartz.*;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Date;
 
 @Configuration
 @EnableAutoConfiguration
@@ -77,11 +78,12 @@ public class SpringQuartzScheduler {
 
     @Bean
     public SimpleTriggerFactoryBean fakturaStatusTrigger(@Qualifier("LevFakturaStatus") JobDetail job){
-        int frequencyInsec = 60*5;
+        int frequencyInsec = 60;
+        Date startTime = DateBuilder.todayAt(8, 30, 0);
         SimpleTriggerFactoryBean trigger = new SimpleTriggerFactoryBean();
         trigger.setJobDetail(job);
-        trigger.setStartDelay(1000);
-        trigger.setRepeatInterval(frequencyInsec * 1000); // millisekunder
+        trigger.setStartTime(startTime);
+        trigger.setRepeatInterval(frequencyInsec * 60 * 24 * 1000); // en gang i døgnet
         trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
         trigger.setName("Qrtz_Trigger_LevFakuraStatus");
         return trigger;
