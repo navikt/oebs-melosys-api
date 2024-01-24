@@ -4,7 +4,7 @@
 
     <groupId>no.nav.oebs</groupId>
     <artifactId>oebs-melosys-api-t1</artifactId>
-    <version>1.2.19</version>
+    <version>1.2.20</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
