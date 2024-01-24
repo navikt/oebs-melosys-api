@@ -13,6 +13,6 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all
-      topic: team-oebs.faktura-status.v1-q1
+      topic: team-oebs.faktura-status.v1-t1
       retries: 5
-      client-id: oebs-faktura-status-producer-q1
+      client-id: oebs-faktura-status-producer-t1

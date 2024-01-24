@@ -17,9 +17,9 @@ server:
 
 spring:
   profiles:
-     active: prod #q1 #u1 #local
+     active: t1 #q1 #u1 #local
   application:
-    name: oebs-melosys-api
+    name: oebs-melosys-api-t1
 
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver

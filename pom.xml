@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>no.nav.oebs</groupId>
-    <artifactId>oebs-melosys-api-prod</artifactId>
-    <version>1.2.15</version>
+    <artifactId>oebs-melosys-api-t1</artifactId>
+    <version>1.2.19</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
