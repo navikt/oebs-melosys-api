@@ -1,12 +1,12 @@
 apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
-  name: oebs-melosys-api-u1
+  name: oebs-melosys-api-t1
   namespace: team-oebs
   labels:
     team: team-oebs
 spec:
-  image: repo.adeo.no:5443/oebs/oebs-melosys-api-u1:1.1.16
+  image: repo.adeo.no:5443/oebs/oebs-melosys-api-t1:1.2.21
   port: 8080
   replicas:
     min: 2
@@ -27,6 +27,8 @@ spec:
     limits:
       cpu: 4000m
       memory: 2048Mi
+  kafka:
+    pool: nav-dev
   azure:
     application:
       enabled: true
@@ -48,6 +50,5 @@ spec:
         mountPath: "/secrets/oebst1/app-name"
       - kvPath: "kv/preprod/fss/oebs-melosys-api-t1/team-oebs/jdbc-url"
         mountPath: "/secrets/oebst1/jdbc-url"
-
   ingresses:
-     - "https://oebs-melosys-api-t1.dev.intern.nav.no"
+     - "https://oebs-melosys-api-t1.intern.dev.nav.no"

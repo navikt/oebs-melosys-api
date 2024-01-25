@@ -6,7 +6,7 @@ metadata:
   labels:
     team: team-oebs
 spec:
-  image: repo.adeo.no:5443/oebs_p/oebs-melosys-api-prod:1.2.15
+  image: repo.adeo.no:5443/oebs/oebs-melosys-api-prod:1.2.16
   port: 8080
   replicas:
     min: 3
@@ -36,6 +36,8 @@ spec:
          - application: oebs-melosys-api
            namespace: team-oebs
            cluster: prod-fss
+  kafka:
+    pool: nav-prod
 
   prometheus:
     enabled: true

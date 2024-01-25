@@ -6,7 +6,7 @@ metadata:
   labels:
     team: team-oebs
 spec:
-  image: repo.adeo.no:5443/oebs/oebs-melosys-api-q2:1.2.14
+  image: repo.adeo.no:5443/oebs/oebs-melosys-api-q2:1.2.21
   port: 8080
   replicas:
     min: 2
@@ -51,4 +51,4 @@ spec:
       - kvPath: "kv/preprod/fss/oebs-melosys-api-q2/team-oebs/jdbc-url"
         mountPath: "/secrets/oebsq2/jdbc-url"
   ingresses:
-     - "https://oebs-melosys-api-q2.dev.intern.nav.no"
+     - "https://oebs-melosys-api-q2.intern.dev.nav.no"

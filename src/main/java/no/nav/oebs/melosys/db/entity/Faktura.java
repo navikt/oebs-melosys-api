@@ -1,16 +1,9 @@
 package no.nav.oebs.melosys.db.entity;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-
 import jakarta.persistence.*;
-
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.GenericGenerator;
@@ -81,9 +74,6 @@ public class Faktura {
         @NotBlank
         @Column(name = "FAKTURABESKRIVELSE")
         private String fakturaBeskrivelse;
-
-       // @OneToMany(mappedBy = "XXRTV_MEL_FAKTURA") // cascade osv?
-       // private List<FakturaLinje> fakturalinjer;
 
         @Column(name = "FAKTURAJSON")
         private String fakturaJson;

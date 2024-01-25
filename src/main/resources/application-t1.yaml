@@ -1,5 +1,18 @@
 spring:
   kafka:
+    bootstrap-servers: ${KAFKA_BROKERS}
+    properties:
+      security.protocol: SSL
+      ssl:
+        keystore:
+          type: PKCS12
+          location: ${KAFKA_KEYSTORE_PATH}
+          password: ${KAFKA_CREDSTORE_PASSWORD}
+        truststore:
+          type: PKCS12
+          location: ${KAFKA_TRUSTSTORE_PATH}
+          password: ${KAFKA_CREDSTORE_PASSWORD}
+        endpoint.identification.algorithm:
     consumer:
       group-id: oebs-melosys-api-t1
       auto-offset-reset: earliest
@@ -13,6 +26,6 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all
-      topic: team-oebs.faktura-status.v1-q1
+      topic: team-oebs.faktura-status.v1-t1
       retries: 5
-      client-id: oebs-faktura-status-producer-q1
+      client-id: oebs-faktura-status-producer-t1

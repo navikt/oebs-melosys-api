@@ -52,4 +52,4 @@ spec:
       - kvPath: "kv/preprod/fss/oebs-melosys-api-u1/team-oebs/jdbc-url"
         mountPath: "/secrets/oebsu1/jdbc-url"
   ingresses:
-     - "https://oebs-melosys-api-u1.dev.intern.nav.no"
+     - "https://oebs-melosys-api-u1.intern.dev.nav.no"

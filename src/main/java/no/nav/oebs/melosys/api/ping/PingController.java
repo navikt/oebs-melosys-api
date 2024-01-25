@@ -25,7 +25,6 @@ public class PingController {
 	 */
 	@Unprotected
 	@GetMapping(path = "/ping")
-	@PingSwagger
 	public void ping() {
 		healthCheckDbProbe.pingDatabase();
 	}

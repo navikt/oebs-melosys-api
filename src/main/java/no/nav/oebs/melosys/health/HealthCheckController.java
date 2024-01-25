@@ -17,7 +17,7 @@ public class HealthCheckController {
 
 	private final Logger logger = LoggerFactory.getLogger(HealthCheckController.class);
 
-	private HealthCheckDbProbe healthCheckDbProbe;
+	private final HealthCheckDbProbe healthCheckDbProbe;
 
 	HealthCheckController(HealthCheckDbProbe healthCheckDbProbe) {
 		this.healthCheckDbProbe = healthCheckDbProbe;

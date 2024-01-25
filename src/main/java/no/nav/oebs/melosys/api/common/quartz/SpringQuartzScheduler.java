@@ -83,7 +83,7 @@ public class SpringQuartzScheduler {
         SimpleTriggerFactoryBean trigger = new SimpleTriggerFactoryBean();
         trigger.setJobDetail(job);
         trigger.setStartTime(startTime);
-        trigger.setRepeatInterval(frequencyInsec * 60 * 24 * 1000); // en gang i døgnet
+        trigger.setRepeatInterval(frequencyInsec * 1000 * 5);
         trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
         trigger.setName("Qrtz_Trigger_LevFakuraStatus");
         return trigger;

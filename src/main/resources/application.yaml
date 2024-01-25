@@ -1,8 +1,8 @@
 
-no.nav.security.jwt:
-  issuer:
-    azure:
-      # < oeb-melosys-api clientinfo >
+#no.nav.security.jwt:
+#  issuer:
+#    azure:
+      # < oebs-melosys-api clientinfo >
       # discoveryurl: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0/.well-known/openid-configuration
       # accepted_audience: 44484cc8-2444-4215-beed-4cc7505e3ab7
       # proxyurl: http://webproxy-nais.nav.no:8088
@@ -17,9 +17,9 @@ server:
 
 spring:
   profiles:
-     active: prod #q1 #u1 #local
+     active: t1 #q1 #u1 #local
   application:
-    name: oebs-melosys-api
+    name: oebs-melosys-api-t1
 
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
@@ -61,7 +61,6 @@ springdoc:
 app:
   kafka:
     retry-max-attempts: '5'
-    authorization-exception-retry-interval-secs: '30'
     retry-backoff-period-ms: '30000'
     retry-interval-max-length: '600000'
 
