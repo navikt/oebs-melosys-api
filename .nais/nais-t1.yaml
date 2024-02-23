@@ -6,7 +6,7 @@ metadata:
   labels:
     team: team-oebs
 spec:
-  image: repo.adeo.no:5443/oebs/oebs-melosys-api-t1:1.2.21
+  image: repo.adeo.no:5443/oebs/oebs-melosys-api-t1:1.2.23
   port: 8080
   replicas:
     min: 2

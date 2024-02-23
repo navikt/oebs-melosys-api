@@ -1,96 +1,29 @@
 package no.nav.oebs.melosys.db.entity;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
 
-/**
- * Entitetsklasse som representerer en rad i faktura-tabellen.
- */
-@Entity
-@NoArgsConstructor
-@AllArgsConstructor
-@SuperBuilder
-@Getter
-@Setter
-@ToString
-@Table(name = "XXRTV_MEL_FAKTURA")
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+@Data
 public class Faktura {
 
-    @Id
-    private Long id;
+    private String fodselsnummer;
+    private String fullmektigOrgnr;
+    private BigDecimal fullmektigFnr;
+    @JsonAlias("vedtaksId")
+    private String fakturaserieReferanse;
+    private String fakturaReferanseNr;
+    private String krediteringFakturaRef;
+    private String referanseBruker;
+    private String referanseNAV;
+    private String beskrivelse;
+    private String artikkel;
+    private List<FakturaLinje> fakturaLinjer;
+    @JsonFormat(pattern="yyyy-MM-dd")
+    private LocalDate faktureringsDato;
 
-        @GenericGenerator(
-                name = "xxrtv_mel_fak_seq",
-                strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-                parameters = {
-                        @Parameter(name = "sequence_name", value = "XXRTV_MEL_FAK_SEQ"),
-                        @Parameter(name = "initial_value", value = "1"),
-                        @Parameter(name = "increment_size", value = "1")
-                }
-        )
-        @Id
-        @GeneratedValue(generator = "xxrtv_mel_fak_seq")
-        @Column(name = "FAKTURA_ID")
-        private Long fakturaId;
-
-        @Column(name = "FODSELSNR")
-        private BigDecimal fodselsnr;
-
-        @Column(name = "FULLMEKTIG_ORG")
-        private String fullmektigOrgnr;
-
-        @Column(name = "FULLMEKTIG_FODSELSNR")
-        private BigDecimal fullmektigFnr;
-
-        @Column(name = "FAKTURA_DATO")
-        private LocalDateTime fakturaDato;
-
-        @NotBlank
-        @Column(name = "VEDTAKSID")
-        private String vedtaksId;
-
-        @NotBlank
-        @Column(name = "FAKTURAREFNR")
-        private String fakturaRefNr;
-
-        @NotBlank
-        @Column(name = "KREDITTREFNR")
-        private String kredittRefNr;
-
-        @NotBlank
-        @Column(name = "REFERANSEBRUKER")
-        private String referanseBruker;
-
-        @NotBlank
-        @Column(name = "REFERANSENAV")
-        private String refranseNAV;
-
-        @NotBlank
-        @Column(name = "FAKTURABESKRIVELSE")
-        private String fakturaBeskrivelse;
-
-        @Column(name = "FAKTURAJSON")
-        private String fakturaJson;
-
-        @Column(name = "KORRELASJON_ID")
-        private String korrelasjonId;
-
-        @Column(name = "STATUS")
-        private String status;
-
-        @Column(name = "RETRY_TELLER")
-        private Integer retryTeller;
-
-        @Column(name = "RETRY_TIDSPUNKT")
-        private LocalDateTime retryTidspunkt;
-
-        @Column(name = "FEILINFORMASJON")
-        private String feilinformasjon;
 }
-

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.oebs.melosys.config.common.logging.LoggingUtils;
 import no.nav.oebs.melosys.db.entity.FakturaStatusFeilImport;
-import no.nav.oebs.melosys.db.entity.FakturaTest;
+import no.nav.oebs.melosys.db.entity.Faktura;
 import no.nav.oebs.melosys.db.entity.KallLogg;
 import no.nav.oebs.melosys.db.repository.PlsqlMessageCodes;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureRepository;
@@ -55,7 +55,7 @@ public class FakturaConsumer {
             acks.acknowledge();
             log.info("Committing partition and offset: {},{}", record.partition(), record.offset());
         } else if (result.getMessageNumber() == PlsqlMessageCodes.EXCEPTION) {
-            FakturaTest faktura = mapFaktura(record.value());
+            Faktura faktura = mapFaktura(record.value());
             FakturaStatusFeilImport fakturaStatus = new FakturaStatusFeilImport(faktura.getFakturaReferanseNr(), result.getMessage());
             fakturaStatusProducerService.sendFakturaStatusVedFeil(fakturaStatus);
             acks.acknowledge();
@@ -63,6 +63,7 @@ public class FakturaConsumer {
             log.info("Committing partition and offset: {},{}", record.partition(), record.offset());
         } else {
             Exception ex = new RuntimeException("Ukjent feil oppstått ved lagring til databasen");
+            acks.acknowledge();
             throw ex;
         }
 
@@ -86,9 +87,9 @@ public class FakturaConsumer {
         return kallLogg;
     }
 
-    private FakturaTest mapFaktura(String json) {
+    private Faktura mapFaktura(String json) {
         try {
-            return objectMapper.readValue(json, FakturaTest.class);
+            return objectMapper.readValue(json, Faktura.class);
         } catch (IOException e) {
             throw new SerializationException(e);
         }
