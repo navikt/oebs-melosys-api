@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>no.nav.oebs</groupId>
-    <artifactId>oebs-melosys-api-prod</artifactId>
-    <version>1.2.17</version>
+    <artifactId>oebs-melosys-api-t1</artifactId>
+    <version>1.2.25</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -116,6 +116,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
+            <version>1.18.34</version>
         </dependency>
 
         <!-- Metrics dependencies -->

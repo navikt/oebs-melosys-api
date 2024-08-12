@@ -22,10 +22,10 @@ public class Props {
         return null;
     }
 
-    public static String appsUserName      = configEnv("/secrets/oebs-p/apps-user/apps-username");
-    public static String appsUserPass      = configEnv("/secrets/oebs-p/apps-user/apps-password");
-    public static String jdbcUrl           = configEnv("/secrets/oebs-p/jdbc-url/url");
-    public static String appName           = configEnv("/secrets/oebs-p/app-name/app-name");
+    public static String appsUserName      = configEnv("/secrets/oebst1/apps-user/apps-username");
+    public static String appsUserPass      = configEnv("/secrets/oebst1/apps-user/apps-password");
+    public static String jdbcUrl           = configEnv("/secrets/oebst1/jdbc-url/url");
+    public static String appName           = configEnv("/secrets/oebst1/app-name/app-name");
 
     public static void setProps() {
         System.setProperty("spring.datasource.username", appsUserName);
