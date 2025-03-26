@@ -25,3 +25,4 @@ postdata.txt
 /.sonar
 .factorypath
 /src/main/java/no/nav/oebs/melosys/kafka/FakturaStatusProducer.java
+settings.json
