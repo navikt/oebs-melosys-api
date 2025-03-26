@@ -1,6 +1,7 @@
 name: Build and push and deploy
 on:
   push:
+    branches:
       - 'oebs-melosys-api-t1'
       - 'oebs-melosys-api-q1'
       - 'main'
