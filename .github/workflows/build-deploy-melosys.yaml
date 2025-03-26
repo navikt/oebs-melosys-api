@@ -39,7 +39,7 @@ jobs:
           salsa: true
 
       - name: Deploy to NAIS (T1)
-        if: github.ref == 'refs/heads/oebs-melosys-api-t1' || github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/oebs-melosys-api-t1'
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-fss
@@ -47,7 +47,7 @@ jobs:
           IMAGE: ${{ steps.docker-push.outputs.image }}
 
       - name: Deploy to NAIS (Q1)
-        if: github.ref == 'refs/heads/oebs-melosys-api-q1' || github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/oebs-melosys-api-q1'
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-fss
