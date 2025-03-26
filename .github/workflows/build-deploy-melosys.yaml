@@ -53,3 +53,11 @@ jobs:
           CLUSTER: dev-fss
           RESOURCE: .nais/nais-q1.yaml
           IMAGE: ${{ steps.docker-push.outputs.image }}
+
+      - name: Deploy to NAIS produksjon
+        if: startsWith(github.ref, 'refs/heads/main')
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-fss
+          RESOURCE: .nais/nais-p.yaml
+          IMAGE: ${{ steps.docker-push.outputs.image }}
