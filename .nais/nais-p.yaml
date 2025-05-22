@@ -23,10 +23,9 @@ spec:
   resources:
     requests:
       cpu: 400m
-      memory: 1024Mi
+      memory: 700Mi
     limits:
-      cpu: 4000m
-      memory: 2048Mi
+      memory: 1024Mi
   azure:
     application:
       enabled: true
