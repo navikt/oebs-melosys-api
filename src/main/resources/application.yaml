@@ -10,7 +10,7 @@
       # reststs:
       #  discoveryurl: https://security-token-service.dev.adeo.no/rest/v1/sts/.well-known/openid-configuration
       #  accepted_audience: srv_oebs
-      # proxyurl: http://webproxy-utvikler.nav.no:8088
+      # proxyurl: http://webproxy-utvikler.nav.no:8088s
 
 server:
   port: 8080
