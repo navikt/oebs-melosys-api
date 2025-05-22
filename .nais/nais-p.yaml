@@ -22,8 +22,8 @@ spec:
     timeout: 10
   resources:
     requests:
-      cpu: 400m
-      memory: 700Mi
+      cpu: 200m
+      memory: 600Mi
     limits:
       memory: 1024Mi
   azure:
