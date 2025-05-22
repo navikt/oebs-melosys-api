@@ -17,7 +17,7 @@ server:
 
 spring:
   profiles:
-     active: prod #q1 #u1 #local
+     active: t1 #prod #q1 #u1 #local
   application:
     name: oebs-melosys-api
 
