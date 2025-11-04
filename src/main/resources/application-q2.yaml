@@ -33,4 +33,4 @@ app:
   kafka:
     topics:
       fakturaStatus: team-oebs.oebs-test-status.v1-q2
-      testFaktura: team-oebs.test-faktura.v1-q2
+      testFaktura: team-oebs.oebs-test-faktura.v1-q2
