@@ -16,10 +16,10 @@ server:
   port: 8080
 
 spring:
-  profiles:
-     active: prod #u1 #local
-  application:
-    name: oebs-melosys-api
+#  profiles:
+#     active: prod #u1 #local
+#  application:
+#    name: oebs-melosys-api
 
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
