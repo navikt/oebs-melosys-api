@@ -1,7 +1,6 @@
 package no.nav.oebs.melosys.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import no.nav.oebs.melosys.config.TopicsProperties;
 import no.nav.oebs.melosys.db.entity.Faktura;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -12,13 +11,21 @@ import org.springframework.stereotype.Service;
  * Producer som publiserer faktura-meldinger som rå JSON-strenger til test-topic.
  */
 @Service
-@RequiredArgsConstructor
 public class TestFakturaProducer {
 
-    @Qualifier("testFakturaRawKafkaTemplate")
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final TopicsProperties topics;
     private final ObjectMapper objectMapper;
+
+    public TestFakturaProducer(
+            @Qualifier("testFakturaRawKafkaTemplate") KafkaTemplate<String, String> kafkaTemplate,
+            TopicsProperties topics,
+            ObjectMapper objectMapper
+    ) {
+        this.kafkaTemplate = kafkaTemplate;
+        this.topics = topics;
+        this.objectMapper = objectMapper;
+    }
 
     /** Sender allerede-serialisert JSON direkte */
     public void sendRaw(String key, String rawJson) {
