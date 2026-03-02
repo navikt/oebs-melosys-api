@@ -63,6 +63,11 @@ app:
     retry-max-attempts: '5'
     retry-backoff-period-ms: '30000'
     retry-interval-max-length: '600000'
+    topics:
+      # OBS: Disse verdiene overstyres av profil-spesifikke konfigurasjoner (prod/u1/q1/q2/t1)
+      # Strukturen nedenfor dokumenterer hvilke topics som konfigureres per miljø
+      fakturaStatus: "team-oebs.faktura-status.v1"    # Input topic for fakturastatuser
+      testFaktura: "teammelosys.faktura-bestilt.v1"   # Input topic for fakturaer
 
 logging:
   level:
