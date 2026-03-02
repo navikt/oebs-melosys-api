@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/internal/kafka/test-faktura")
 @RequiredArgsConstructor
-@Profile("q2")
+@Profile("dev")
 public class TestFakturaController {
 
     private final TestFakturaProducer producer;
