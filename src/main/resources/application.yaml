@@ -1,4 +1,3 @@
-
 #no.nav.security.jwt:
 #  issuer:
 #    azure:
@@ -16,11 +15,13 @@ server:
   port: 8080
 
 spring:
-#  profiles:
-#     active: prod #u1 #local
-#  application:
-#    name: oebs-melosys-api
-
+  profiles:
+    group:
+      u1: dev,u1
+      q1: dev,q1
+      q2: dev,q2
+      t1: dev,t1
+      prod: prod
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
   flyway:

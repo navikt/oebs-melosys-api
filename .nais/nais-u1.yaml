@@ -49,6 +49,6 @@ spec:
 
   env:
     - name: SPRING_PROFILES_ACTIVE
-      value: dev
+      value: u1
   ingresses:
      - "https://oebs-melosys-api-u1.intern.dev.nav.no"
