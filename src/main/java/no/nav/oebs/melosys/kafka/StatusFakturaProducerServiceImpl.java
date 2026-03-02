@@ -39,7 +39,7 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
 
     private final ObjektMaps objektMaps = new ObjektMaps(new ObjectMapper());
 
-    @Value("${spring.kafka.producer.topic}")
+    @Value("${app.kafka.topics.fakturaStatus}")
     private String topic;
 
 
@@ -82,6 +82,7 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
 
     public void hentOgSplitFakturaStatus(){
         PlsqlProcedureResult result = plsqlProcedureRepository.executeOutProcedure(PLSQL_PROCEDURE);
+        log.info("FakturaStatus meldinger: {}", result.getData());
         if(result.getData() != null && !result.getData().isEmpty()) {
             Stream<String> fakturaStatusStream = result.getData().lines();
             List<String> fakturaStatus = fakturaStatusStream.toList();

@@ -4,6 +4,7 @@ on:
     branches:
       - 'oebs-melosys-api-t1'
       - 'oebs-melosys-api-q1'
+      - 'oebs-melosys-api-q2'
       - 'main'
 jobs:
   build_and_push:
@@ -53,6 +54,14 @@ jobs:
         env:
           CLUSTER: dev-fss
           RESOURCE: .nais/nais-q1.yaml
+          IMAGE: ${{ steps.docker-push.outputs.image }}
+
+      - name: Deploy to NAIS (Q2)
+        if: github.ref == 'refs/heads/oebs-melosys-api-q2'
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-fss
+          RESOURCE: .nais/nais-q2.yaml
           IMAGE: ${{ steps.docker-push.outputs.image }}
 
       - name: Deploy to NAIS produksjon

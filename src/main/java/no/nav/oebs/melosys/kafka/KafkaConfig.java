@@ -36,7 +36,7 @@ public class KafkaConfig {
 
     @Value("${app.kafka.retry-interval-max-length}")
     private long retryIntervalMaxLength;
-    private final String deadLetterRecoveryTopic = "team-oebs.faktura-import-dlq.v1-u1";
+    private final String deadLetterRecoveryTopic = "team-oebs.faktura-import-dlq.v1-q2";
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
