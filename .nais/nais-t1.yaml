@@ -43,11 +43,11 @@ spec:
   vault:
     enabled: true
     paths:
-      - kvPath: "kv/preprod/fss/oebs-melosys-api-t1/team-oebs/apps-user"
-        mountPath: "/secrets/oebst1/apps-user"
-      - kvPath: "kv/preprod/fss/oebs-melosys-api-t1/team-oebs/app-name"
-        mountPath: "/secrets/oebst1/app-name"
-      - kvPath: "kv/preprod/fss/oebs-melosys-api-t1/team-oebs/jdbc-url"
-        mountPath: "/secrets/oebst1/jdbc-url"
+      - kvPath: "kv/preprod/fss/oebs-melosys-api-t1/team-oebs"
+        mountPath: "/var/run/secrets/nais.io/vault"
+
+  env:
+    - name: SPRING_PROFILES_ACTIVE
+      value: dev
   ingresses:
      - "https://oebs-melosys-api-t1.intern.dev.nav.no"
