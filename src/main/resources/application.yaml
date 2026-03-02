@@ -38,6 +38,9 @@ spring:
       allow-numeric-leading-zeros: true
   quartz:
     job-store-type: jdbc
+  kafka:
+    consumer:
+      group-id: oebs-melosys-api
 
 management:
   endpoints:
