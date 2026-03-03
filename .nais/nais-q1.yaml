@@ -43,7 +43,7 @@ spec:
   vault:
     enabled: true
     paths:
-      - kvPath: "kv/preprod/fss/oebs-melosys-api-t1/team-oebs"
+      - kvPath: "kv/preprod/fss/oebs-melosys-api-q1/team-oebs"
         mountPath: "/var/run/secrets/nais.io/vault"
 
   env:
