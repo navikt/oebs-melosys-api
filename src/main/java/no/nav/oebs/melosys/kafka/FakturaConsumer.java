@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 @Component
 public class FakturaConsumer {
 
-    private static final String PLSQL_PROCEDURE = "xxrtv_ar_melosys_pkg.fakturaimport";
+    private static final String PLSQL_PROCEDURE = "apps.xxrtv_ar_melosys_pkg.fakturaimport";
 
     @Autowired
     private PlsqlProcedureRepository plsqlProcedureRepository;

@@ -37,6 +37,8 @@ public class PlsqlProcedureRepository {
 	private static final String DATA_OUT_PARAM = "data_out";
 	private static final String MESSAGE_NO_PARAM = "msg_no";
 	private static final String MESSAGE_PARAM = "msg";
+	private static final int PROCEDURE_NAME_NO_SCHEMA_TOKENS = 2;
+	private static final int PROCEDURE_NAME_WITH_SCHEMA_TOKENS = 3;
 
 	private KallLoggRepository kallLoggRepository;
 
@@ -151,9 +153,11 @@ public class PlsqlProcedureRepository {
 	 * Sjekker at formatet på prosedyrenavnet er korrekt. Kaster en <code>IllegalArgumentException</code> dersom ikke.
 	 */
 	private void validateProcedureName(String procedureName) {
-		if (procedureName.split("\\.").length != 2) {
+		int tokenCount = procedureName.split("\\.").length;
+		if (tokenCount != PROCEDURE_NAME_NO_SCHEMA_TOKENS && tokenCount != PROCEDURE_NAME_WITH_SCHEMA_TOKENS) {
 			throw new IllegalArgumentException(
-					"Feil format på PL/SQL-prosedyrenavnet '" + procedureName + "'; skal ha format 'pakkenavn.prosedyrenavn'");
+					"Feil format på PL/SQL-prosedyrenavnet '" + procedureName
+							+ "'; skal ha format 'pakkenavn.prosedyrenavn' eller 'schema.pakkenavn.prosedyrenavn'");
 		}
 	}
 
@@ -164,12 +168,19 @@ public class PlsqlProcedureRepository {
 		SimpleJdbcCall jdbcCall = jdbcCallCache.get(procedureName);
 		if (jdbcCall == null) {
 			String[] tokens = procedureName.split("\\.");
+			String packageName = tokens[tokens.length - 2];
+			String procedure = tokens[tokens.length - 1];
 
-			jdbcCall = new SimpleJdbcCall(jdbcTemplate) //
-					.withCatalogName(tokens[0]) //
-					.withProcedureName(tokens[1]) //
-					.withoutProcedureColumnMetaDataAccess() //
-					.declareParameters(declaredParameters);
+			SimpleJdbcCall jdbcCallBuilder = new SimpleJdbcCall(jdbcTemplate) //
+					.withCatalogName(packageName) //
+					.withProcedureName(procedure) //
+					.withoutProcedureColumnMetaDataAccess();
+
+			if (tokens.length == PROCEDURE_NAME_WITH_SCHEMA_TOKENS) {
+				jdbcCallBuilder = jdbcCallBuilder.withSchemaName(tokens[0]);
+			}
+
+			jdbcCall = jdbcCallBuilder.declareParameters(declaredParameters);
 
 			jdbcCallCache.put(procedureName, jdbcCall);
 
