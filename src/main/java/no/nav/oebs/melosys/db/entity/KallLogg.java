@@ -28,7 +28,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@Table(name = "XXRTV_MEL_LOG")
+@Table(name = "XXRTV_MEL_LOGG", schema = "XXRTV")
 public class KallLogg {
 
 	public static final String RETNING_INN = "INN";
@@ -41,7 +41,7 @@ public class KallLogg {
 	public static final String TYPE_KAFKA = "KAFKA";
 
 	@Id
-	@SequenceGenerator(name = "XXRTV_MEL_SEQ", sequenceName = "XXRTV_MEL_SEQ", allocationSize = 1)
+	@SequenceGenerator(name = "XXRTV_MEL_SEQ", sequenceName = "APPS.XXRTV_MEL_SEQ", allocationSize = 1)
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "XXRTV_MEL_SEQ")
 	@Column(name = "KALL_LOGG_ID")
 	private Long id;
