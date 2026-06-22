@@ -12,6 +12,9 @@ og at status på disse fakturaene kan oppdateres i Melosys basert på informasjo
 OeBS sender status på faktura tilbake til melosys. Dette gjøres en gang i døgnet. Feilede faktura opprettelser
 sender feilmelding med en gang
 
+OeBS sitt t1 miljø er koblet mot Melosys sitt Q1 miljø, og OeBS sitt Q1 miljø er koblet mot melosys sitt Q2 miljø
+Dette kan ikke endres uten at det avtales med melosys, de bruker i hovedsak OeBS t1 til sin testing.
+
 ## Avhengigheter
 - OeBS, oppretter faktura og sender ut til brukere basert på faturaer som produseres i Melosys
 - Aiven Kafka, for meldingsutveksling mellom Melosys og OEBS(fakturaer og faktura status)
@@ -56,10 +59,11 @@ en leveranse skal gjennom alle branches før prod, men det er ikke satt opp en a
 
 Det finnes en swagger, men den er ikke funksjonell per i dag, det vil kun være test endepunkt det er reelt for, kan nok fjernes
 eventuelt oppdatere swagger(fjerne artifakter fra EyeShare sin swagger) og legge protection på endepunkt
+
 ## TODO
 [x] Endre props innlasting
 [] Oppdatere integrasjonstegning
-[] Legge til protection på test endepunkt
+[] Legge til protection på test endepunkt, og eventuelt azure-token-generator
 [] Legge til tester
 [] Legge til overvåkning og alarmering(alarmer går hos melosys)
 [] Fjerne DLQ topic eller utvide denne til å håndtere feilede meldinger på en bedre måte(feilmeldinger så langt 
