@@ -61,15 +61,15 @@ Det finnes en swagger, men den er ikke funksjonell per i dag, det vil kun være 
 eventuelt oppdatere swagger(fjerne artifakter fra EyeShare sin swagger) og legge protection på endepunkt
 
 ## TODO
-[x] Endre props innlasting
-[] Oppdatere integrasjonstegning
-[] Legge til protection på test endepunkt, og eventuelt azure-token-generator
-[] Legge til tester
-[] Legge til overvåkning og alarmering(alarmer går hos melosys)
-[] Fjerne DLQ topic eller utvide denne til å håndtere feilede meldinger på en bedre måte(feilmeldinger så langt 
-har ikke hatt nytte av DLQ da feilene har måtte håndteres manuelt av ØS)
-[] Sette opp automatisk sjekk for at leveranser går gjennom alle branches før prod
-[] Oppdatere Kafka manager slik at den fungerer igjen etter at image ble flyttet til GHCR
+- [x] Endre props innlasting
+- [ ] Oppdatere integrasjonstegning
+- [ ] Legge til protection på test endepunkt, og eventuelt azure-token-generator
+- [ ] Legge til tester
+- [ ] Legge til overvåkning og alarmering(alarmer går hos melosys)
+- [ ] Fjerne DLQ topic eller utvide denne til å håndtere feilede meldinger på en bedre måte(feilmeldinger så langt
+  har ikke hatt nytte av DLQ da feilene har måtte håndteres manuelt av ØS)
+- [ ] Sette opp automatisk sjekk for at leveranser går gjennom alle branches før prod
+- [ ] Oppdatere Kafka manager slik at den fungerer igjen etter at image ble flyttet til GHCR
 
 **Versjon**: 1.3.2 | **Java**: 17 | **Spring Boot**: 3.4.5
 ---
