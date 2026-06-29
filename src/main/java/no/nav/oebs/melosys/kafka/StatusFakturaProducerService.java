@@ -9,7 +9,5 @@ import java.util.concurrent.ExecutionException;
 public interface StatusFakturaProducerService {
     void sendFakturaStatus(FakturaStatus status, PlsqlProcedureResult result, String procedureName) throws ExecutionException, InterruptedException;
 
-    void hentOgSplitFakturaStatus();
-
     void sendFakturaStatusVedFeil(FakturaStatusFeilImport fakturaStatus);
 }

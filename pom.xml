@@ -24,7 +24,6 @@
         <token-validation.version>3.0.8</token-validation.version>
         <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
         <nimbus-jose-jwt.version>10.0.2</nimbus-jose-jwt.version>
-        <springdoc-openapi.version>1.6.14</springdoc-openapi.version>
         <sonar-maven-plugin.version>3.9.1.2184</sonar-maven-plugin.version>
         <lombok.version>1.18.42</lombok.version>
     </properties>
@@ -43,10 +42,6 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jetty</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -124,19 +119,6 @@
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
             <scope>runtime</scope>
-        </dependency>
-
-        <!-- Swagger -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>${springdoc-openapi.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>no.nav.security</groupId>
-            <artifactId>token-validation-spring</artifactId>
-            <version>${token-validation.version}</version>
         </dependency>
 
         <!-- Kreves av NAV token-validation -->

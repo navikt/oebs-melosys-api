@@ -30,10 +30,6 @@ public class MdcOperations {
 		log.debug("Setter MDC-verdi {}={}", key, value);
 	}
 
-	public static void remove(String key) {
-		MDC.remove(key);
-	}
-
 	/**
 	 * @return Generert korrelasjon ID på formatet TIMESTAMP-RANDOMNUMBER.
 	 */

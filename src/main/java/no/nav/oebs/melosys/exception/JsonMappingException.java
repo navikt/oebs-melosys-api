@@ -11,7 +11,4 @@ public class JsonMappingException extends RuntimeException {
 		super(cause);
 	}
 
-	public JsonMappingException(String message, Exception cause) {
-		super(message, cause);
-	}
 }

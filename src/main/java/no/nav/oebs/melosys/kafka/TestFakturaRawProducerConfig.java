@@ -27,7 +27,6 @@ public class TestFakturaRawProducerConfig {
 
     @Bean("testFakturaRawKafkaTemplate")
     public KafkaTemplate<String, String> testFakturaRawKafkaTemplate(
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
             ProducerFactory<String, String> testFakturaRawProducerFactory) {
 
         return new KafkaTemplate<>(testFakturaRawProducerFactory);
