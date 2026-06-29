@@ -2,7 +2,7 @@ package no.nav.oebs.melosys.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.oebs.melosys.api.common.utils.ObjektMaps;
+import no.nav.oebs.melosys.common.utils.ObjektMaps;
 import no.nav.oebs.melosys.config.common.logging.LoggingUtils;
 import no.nav.oebs.melosys.db.entity.FakturaStatus;
 import no.nav.oebs.melosys.db.entity.FakturaStatusFeilImport;

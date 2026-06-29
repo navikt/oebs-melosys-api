@@ -1,4 +1,4 @@
-package no.nav.oebs.melosys.api.common.utils;
+package no.nav.oebs.melosys.common.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

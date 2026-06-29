@@ -20,6 +20,8 @@ spring:
   jackson:
     parser:
       allow-numeric-leading-zeros: true
+  quartz:
+    job-store-type: jdbc
   kafka:
     bootstrap-servers: ${KAFKA_BROKERS}
     properties:
@@ -48,6 +50,11 @@ spring:
       acks: all
       retries: 5
       client-id: ${KAFKA_PRODUCER_CLIENT_ID}
+
+# Quartz
+using:
+  spring:
+    schedulerFactory: true
 
 app:
   kafka:
