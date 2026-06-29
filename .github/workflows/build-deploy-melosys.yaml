@@ -23,7 +23,7 @@ jobs:
           java-version: '21'
 
       - name: Build with Maven
-        run: mvn clean install -DskipTests
+        run: mvn clean install
 
       - uses: nais/docker-build-push@v0
         id: docker-push
@@ -54,14 +54,6 @@ jobs:
         env:
           CLUSTER: dev-fss
           RESOURCE: .nais/nais-q1.yaml
-          IMAGE: ${{ steps.docker-push.outputs.image }}
-
-      - name: Deploy to NAIS (Q2)
-        if: github.ref == 'refs/heads/oebs-melosys-api-q2'
-        uses: nais/deploy/actions/deploy@v2
-        env:
-          CLUSTER: dev-fss
-          RESOURCE: .nais/nais-q2.yaml
           IMAGE: ${{ steps.docker-push.outputs.image }}
 
       - name: Deploy to NAIS produksjon
