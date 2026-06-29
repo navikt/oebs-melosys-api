@@ -39,7 +39,7 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
 
     private final ObjektMaps objektMaps = new ObjektMaps(new ObjectMapper());
 
-    @Value("${app.kafka.topics.fakturaStatus}")
+    @Value("${app.kafka.topics.faktura-status}")
     private String topic;
 
 

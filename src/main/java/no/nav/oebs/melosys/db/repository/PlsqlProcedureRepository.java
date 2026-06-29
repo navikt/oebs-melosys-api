@@ -31,8 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 @Repository
 public class PlsqlProcedureRepository {
 
-	// Generelle parameternavn; behøver ikke å matche hva som brukes i PL/SQL.
-	// private static final String ID_PARAM = "id";
 	private static final String DATA_IN_PARAM = "data_in";
 	private static final String DATA_OUT_PARAM = "data_out";
 	private static final String MESSAGE_NO_PARAM = "msg_no";
@@ -79,14 +77,11 @@ public class PlsqlProcedureRepository {
 			validateProcedureName(procedureName);
 
 			SimpleJdbcCall jdbcCall = getJdbcCall(procedureName, //
-					// new SqlParameter(ID_PARAM, Types.VARCHAR), //
 					new SqlParameter(DATA_IN_PARAM, Types.CLOB), //
-					//new SqlOutParameter(DATA_OUT_PARAM, Types.CLOB), //
 					new SqlOutParameter(MESSAGE_NO_PARAM, Types.NUMERIC), //
 					new SqlOutParameter(MESSAGE_PARAM, Types.VARCHAR));
 
 			SqlParameterSource inParams = new MapSqlParameterSource() //
-					// .addValue(ID_PARAM, MdcOperations.get(MdcOperations.MDC_CORRELATION_ID)) //
 					.addValue(DATA_IN_PARAM, dataIn);
 
 			result = executeProcedure(jdbcCall, inParams);
@@ -94,7 +89,7 @@ public class PlsqlProcedureRepository {
 			return result;
 		} catch (Exception e) {
 			exception = e;
-			System.out.println("EN FEIL HAR OPPSTÅTT");
+			log.error("EN FEIL HAR OPPSTÅTT");
 			throw e;
 		} finally {
 			long endTime = System.currentTimeMillis();
@@ -138,7 +133,7 @@ public class PlsqlProcedureRepository {
 			return result;
 		} catch (Exception e) {
 			exception = e;
-			System.out.println("EN FEIL HAR OPPSTÅTT");
+			log.error("EN FEIL HAR OPPSTÅTT");
 			throw e;
 		} finally {
 			long endTime = System.currentTimeMillis();
@@ -226,7 +221,6 @@ public class PlsqlProcedureRepository {
 
 		KallLogg kallLogg = KallLogg.builder() //
 				.korrelasjonId(MdcOperations.generateCorrelationId())
-				// .korrelasjonId(MdcOperations.get(MdcOperations.MDC_CORRELATION_ID)) //
 				.tidspunkt(LocalDateTime.now()) //
 				.type(KallLogg.TYPE_PLSQL) //
 				.kallRetning(KallLogg.RETNING_UT) //
@@ -242,13 +236,8 @@ public class PlsqlProcedureRepository {
 						: PlsqlProcedureResult.getMessage(result))  //
 				.build();
 
-		// log.debug(kallLogg.toString());
-
 		log.debug("Correlation ID:  '" + correlationId + "'");
-
-		//if (correlationId == null)  {
 		saveKallLogg(kallLogg);
-		//}
 	}
 
 	public void saveKallLogg(KallLogg kallLogg) {

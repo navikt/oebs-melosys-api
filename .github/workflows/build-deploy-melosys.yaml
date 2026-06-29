@@ -4,8 +4,13 @@ on:
     branches:
       - 'oebs-melosys-api-t1'
       - 'oebs-melosys-api-q1'
-      - 'oebs-melosys-api-q2'
       - 'main'
+  pull_request:
+    branches:
+      - 'oebs-melosys-api-t1'
+      - 'oebs-melosys-api-q1'
+      - 'main'
+
 jobs:
   build_and_push:
     permissions:
@@ -26,6 +31,7 @@ jobs:
         run: mvn clean install
 
       - uses: nais/docker-build-push@v0
+        if: github.event_name == 'push'
         id: docker-push
         with:
           team: team-oebs # required
@@ -41,7 +47,7 @@ jobs:
           salsa: true
 
       - name: Deploy to NAIS (T1)
-        if: github.ref == 'refs/heads/oebs-melosys-api-t1'
+        if: github.ref == 'refs/heads/oebs-melosys-api-t1' && github.event_name == 'push'
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-fss
@@ -49,7 +55,7 @@ jobs:
           IMAGE: ${{ steps.docker-push.outputs.image }}
 
       - name: Deploy to NAIS (Q1)
-        if: github.ref == 'refs/heads/oebs-melosys-api-q1'
+        if: github.ref == 'refs/heads/oebs-melosys-api-q1' && github.event_name == 'push'
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-fss
@@ -57,7 +63,7 @@ jobs:
           IMAGE: ${{ steps.docker-push.outputs.image }}
 
       - name: Deploy to NAIS produksjon
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: prod-fss
