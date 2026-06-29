@@ -1,29 +1,12 @@
-#no.nav.security.jwt:
-#  issuer:
-#    azure:
-      # < oebs-melosys-api clientinfo >
-      # discoveryurl: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0/.well-known/openid-configuration
-      # accepted_audience: 44484cc8-2444-4215-beed-4cc7505e3ab7
-      # proxyurl: http://webproxy-nais.nav.no:8088
-      # cookie_name: azure_token
-      # reststs:
-      #  discoveryurl: https://security-token-service.dev.adeo.no/rest/v1/sts/.well-known/openid-configuration
-      #  accepted_audience: srv_oebs
-      # proxyurl: http://webproxy-utvikler.nav.no:8088s
-
 server:
   port: 8080
 
 spring:
-  profiles:
-    group:
-      u1: dev,u1
-      q1: dev,q1
-      q2: dev,q2
-      t1: dev,t1
-      prod: prod
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
+    username: ${OEBS_USERNAME}
+    password: ${OEBS_PASSWORD}
+    url: ${OEBS_URL}
   flyway:
     locations: classpath:/db/migration,classpath:/db/oracle
   jpa:
@@ -37,30 +20,34 @@ spring:
   jackson:
     parser:
       allow-numeric-leading-zeros: true
-  quartz:
-    job-store-type: jdbc
   kafka:
+    bootstrap-servers: ${KAFKA_BROKERS}
+    properties:
+      security.protocol: SSL
+      ssl:
+        keystore:
+          type: PKCS12
+          location: ${KAFKA_KEYSTORE_PATH}
+          password: ${KAFKA_CREDSTORE_PASSWORD}
+        truststore:
+          type: ${KAFKA_SSL_TRUSTSTORE}
+          location: ${KAFKA_TRUSTSTORE_PATH}
+          password: ${KAFKA_CREDSTORE_PASSWORD}
+        endpoint.identification.algorithm:
     consumer:
-      group-id: oebs-melosys-api
+      group-id: ${NAIS_APP_NAME}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
+      max-poll-records: 1
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, prometheus, metrics
-
-# Quartz
-using:
-  spring:
-    schedulerFactory: true
-
-springdoc:
-  packagesToScan: no.nav.oebs.melosys
-  override-with-generic-response: false
-  remove-broken-reference-definitions: false
-  swagger-ui:
-    disable-swagger-default-url: true
-    tags-sorter: alpha
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 5
+      client-id: ${KAFKA_PRODUCER_CLIENT_ID}
 
 app:
   kafka:
@@ -68,10 +55,19 @@ app:
     retry-backoff-period-ms: '30000'
     retry-interval-max-length: '600000'
     topics:
-      # OBS: Disse verdiene overstyres av profil-spesifikke konfigurasjoner (prod/u1/q1/q2/t1)
-      # Strukturen nedenfor dokumenterer hvilke topics som konfigureres per miljø
-      fakturaStatus: "team-oebs.faktura-status.v1"    # Input topic for fakturastatuser
-      testFaktura: "teammelosys.faktura-bestilt.v1"   # Input topic for fakturaer
+      faktura-status: ${KAFKA_TOPIC_FAKTURA_STATUS}
+      test-faktura: ${KAFKA_TOPIC_TEST_FAKTURA}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
 
 logging:
   level:
