@@ -40,7 +40,7 @@ public class FakturaConsumer {
 
 
 
-    @KafkaListener(topics = "${app.kafka.topics.testFaktura}",
+    @KafkaListener(topics = "${app.kafka.topics.test-faktura}",
             groupId = "${spring.kafka.consumer.group-id}", errorHandler = "kafkaErrorHandler")
     public void consumeMessages(ConsumerRecord<String, String> record, Acknowledgment acks) throws Exception {
         long startTime = System.currentTimeMillis();

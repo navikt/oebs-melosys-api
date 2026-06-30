@@ -1,4 +1,4 @@
-package no.nav.oebs.melosys.api.common.quartz;
+package no.nav.oebs.melosys.common.quartz;
 
 import org.quartz.spi.TriggerFiredBundle;
 import org.springframework.beans.BeansException;

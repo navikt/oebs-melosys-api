@@ -13,10 +13,6 @@ public class CustomLocalDateDeserializer extends StdDeserializer<LocalDate> {
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy[dd-MMM-yy]");
 
-    public CustomLocalDateDeserializer() {
-        this(null);
-    }
-
     protected CustomLocalDateDeserializer(Class<?> vc) {
         super(vc);
     }

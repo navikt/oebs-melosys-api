@@ -10,11 +10,5 @@ public class PlsqlMessageCodes {
 
 	public static final int OK = 0;
 	public static final int EXCEPTION = -1;
-	public static final int FEIL_I_INPUT = -20882;
 
-	// ett felt hodenivå og linjenivå kall ID er fremmednøkkel
 }
-// kommet inn i Oracle bilagsnummer
-// ikke betalt
-// org id
-// org navn i hodenivå
