@@ -18,8 +18,5 @@ public class FakturaLinje {
     private BigDecimal enhetspris;
     private BigDecimal belop;
 
-    public FakturaLinje(int i) {
-
-    }
 
 }

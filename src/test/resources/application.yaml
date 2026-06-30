@@ -4,9 +4,9 @@ server:
 spring:
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
-    username: ${OEBS_USERNAME}
-    password: ${OEBS_PASSWORD}
-    url: ${OEBS_URL}
+    username: username
+    password: password
+    url: jdbc:oracle:thin:@localhost:1521:testdb
   flyway:
     locations: classpath:/db/migration,classpath:/db/oracle
   jpa:
@@ -14,30 +14,20 @@ spring:
       ddl-auto: none
     properties:
       hibernate:
+        temp:
+        use__jdbc_metadata_defaults: false
         dialect: org.hibernate.dialect.OracleDialect
     show-sql: false
     open-in-view: false
   jackson:
     parser:
       allow-numeric-leading-zeros: true
-  quartz:
-    job-store-type: jdbc
   kafka:
-    bootstrap-servers: ${KAFKA_BROKERS}
+    bootstrap-servers: test-kafka.nav.no:9092
     properties:
-      security.protocol: SSL
-      ssl:
-        keystore:
-          type: PKCS12
-          location: ${KAFKA_KEYSTORE_PATH}
-          password: ${KAFKA_CREDSTORE_PASSWORD}
-        truststore:
-          type: ${KAFKA_SSL_TRUSTSTORE}
-          location: ${KAFKA_TRUSTSTORE_PATH}
-          password: ${KAFKA_CREDSTORE_PASSWORD}
-        endpoint.identification.algorithm:
+      security.protocol: plaintext
     consumer:
-      group-id: ${NAIS_APP_NAME}
+      group-id: oebs-melosys-api
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -49,12 +39,7 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all
       retries: 5
-      client-id: ${KAFKA_PRODUCER_CLIENT_ID}
-
-# Quartz
-using:
-  spring:
-    schedulerFactory: true
+      client-id: client-id-test
 
 app:
   kafka:
@@ -62,21 +47,5 @@ app:
     retry-backoff-period-ms: '30000'
     retry-interval-max-length: '600000'
     topics:
-      faktura-status: ${KAFKA_TOPIC_FAKTURA_STATUS}
-      test-faktura: ${KAFKA_TOPIC_TEST_FAKTURA}
-
-management:
-  endpoint:
-    health:
-      probes:
-        enabled: true
-  health:
-    livenessstate:
-      enabled: true
-    readinessstate:
-      enabled: true
-
-logging:
-  level:
-    org:
-      springframework: info
+      faktura-status: faktura-status-topic
+      test-faktura: test-faktura-topic

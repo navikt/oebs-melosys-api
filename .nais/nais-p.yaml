@@ -12,20 +12,24 @@ spec:
     min: 3
     max: 4
     cpuThresholdPercentage: 50
+
   liveness:
-    path: /internal/isalive
+    path: /actuator/health/liveness
     initialDelay: 60
     timeout: 10
   readiness:
-    path: /internal/isready
+    path: /actuator/health/readiness
     initialDelay: 60
     timeout: 10
+
   resources:
     requests:
       cpu: 70m
       memory: 600Mi
     limits:
       memory: 800Mi
+  kafka:
+    pool: nav-prod
   azure:
     application:
       enabled: true
@@ -35,20 +39,22 @@ spec:
          - application: oebs-melosys-api
            namespace: team-oebs
            cluster: prod-fss
-  kafka:
-    pool: nav-prod
-
   prometheus:
     enabled: true
     path: /actuator/prometheus
-  vault:
-    enabled: true
-    paths:
-      - kvPath: "kv/prod/fss/oebs-melosys-api/team-oebs"
-        mountPath: "/var/run/secrets/nais.io/vault"
 
   env:
-    - name: SPRING_PROFILES_ACTIVE
-      value: prod
+    - name: KAFKA_SSL_TRUSTSTORE
+      value: PKCS12
+    - name: KAFKA_PRODUCER_CLIENT_ID
+      value: oebs-faktura-status-producer
+    - name: KAFKA_TOPIC_FAKTURA_STATUS
+      value: team-oebs.faktura-status.v1
+    - name: KAFKA_TOPIC_TEST_FAKTURA
+      value: teammelosys.faktura-bestilt.v1
+
+  envFrom:
+    - secret: oebs-melosys-api
+
   ingresses:
      - "https://oebs-melosys-api.intern.nav.no"
