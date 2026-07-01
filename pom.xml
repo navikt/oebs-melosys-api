@@ -23,7 +23,6 @@
         <!-- NAV artifacts -->
         <token-validation.version>3.0.8</token-validation.version>
         <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
-        <nimbus-jose-jwt.version>10.0.2</nimbus-jose-jwt.version>
         <sonar-maven-plugin.version>3.9.1.2184</sonar-maven-plugin.version>
         <lombok.version>1.18.42</lombok.version>
     </properties>
@@ -48,17 +47,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-quartz</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
         <dependency>
@@ -75,14 +64,6 @@
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
-        <!-- Automatisk reload ved kodeendringer -->
-        <!-- Gir warning om manglende fil i jdbc oracle driver ved oppstart -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <optional>true</optional>
-        </dependency>
-
         <!-- Logging med Kibana-integrasjon -->
         <dependency>
             <groupId>net.logstash.logback</groupId>
@@ -107,49 +88,6 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-        </dependency>
-
-        <!-- JAXB (bruker samme artifakter som Spring Boot)-->
-        <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- Kreves av NAV token-validation -->
-        <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
-        </dependency>
-
-        <!-- Jetty HTTP Client -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-reactive-httpclient</artifactId>
-        </dependency>
-
-        <!-- Nimbus JWT support -->
-        <dependency>
-            <groupId>com.nimbusds</groupId>
-            <artifactId>nimbus-jose-jwt</artifactId>
-            <version>${nimbus-jose-jwt.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.19.0</version>
-        </dependency>
-
-        <!-- Commons -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
         </dependency>
 
         <!-- Test dependencies -->
