@@ -72,6 +72,6 @@ eventuelt oppdatere swagger(fjerne artifakter fra EyeShare sin swagger) og legge
 - [ ] Sette opp automatisk sjekk for at leveranser går gjennom alle branches før prod
 - [ ] Oppdatere Kafka manager slik at den fungerer igjen etter at image ble flyttet til GHCR
 
-**Versjon**: 1.3.2 | **Java**: 17 | **Spring Boot**: 3.4.5
+**Versjon**: 1.3.2 | **Java**: 21 | **Spring Boot**: 3.4.5
 ---
 **Sist oppdatert**: 2. Mars 2026 | **Versjon**: 1.3.2
