@@ -21,7 +21,6 @@
         <surefire.coverage.argLine/>
 
         <!-- NAV artifacts -->
-        <token-validation.version>3.0.8</token-validation.version>
         <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
         <sonar-maven-plugin.version>3.9.1.2184</sonar-maven-plugin.version>
         <lombok.version>1.18.42</lombok.version>
@@ -102,13 +101,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- NAV test artifacts -->
-        <dependency>
-            <groupId>no.nav.security</groupId>
-            <artifactId>token-validation-spring-test</artifactId>
-            <version>${token-validation.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
