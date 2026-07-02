@@ -22,7 +22,7 @@
 
         <!-- NAV artifacts -->
         <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
-        <sonar-maven-plugin.version>3.9.1.2184</sonar-maven-plugin.version>
+        <sonar-maven-plugin.version>5.7.0.6970</sonar-maven-plugin.version>
         <lombok.version>1.18.46</lombok.version>
     </properties>
 
