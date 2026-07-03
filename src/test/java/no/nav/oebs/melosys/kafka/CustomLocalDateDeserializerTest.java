@@ -1,14 +1,13 @@
 package no.nav.oebs.melosys.kafka;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
 
-import java.io.IOException;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,7 +30,7 @@ class CustomLocalDateDeserializerTest {
     }
 
     @Test
-    void deserialize_withValidDdMmYyyyFormat_returnsLocalDate() throws IOException {
+    void deserialize_withValidDdMmYyyyFormat_returnsLocalDate(){
         when(jsonParser.getText()).thenReturn("30.06.2026");
 
         LocalDate result = deserializer.deserialize(jsonParser, deserializationContext);
@@ -40,7 +39,7 @@ class CustomLocalDateDeserializerTest {
     }
 
     @Test
-    void deserialize_withIsoFormat_throwsRuntimeException() throws IOException {
+    void deserialize_withIsoFormat_throwsRuntimeException() {
         when(jsonParser.getText()).thenReturn("2026-06-30");
 
         assertThrows(RuntimeException.class, () ->
@@ -48,7 +47,7 @@ class CustomLocalDateDeserializerTest {
     }
 
     @Test
-    void deserialize_withEmptyString_throwsRuntimeException() throws IOException {
+    void deserialize_withEmptyString_throwsRuntimeException() {
         when(jsonParser.getText()).thenReturn("");
 
         assertThrows(RuntimeException.class, () ->
@@ -56,7 +55,7 @@ class CustomLocalDateDeserializerTest {
     }
 
     @Test
-    void deserialize_withInvalidText_throwsRuntimeException() throws IOException {
+    void deserialize_withInvalidText_throwsRuntimeException() {
         when(jsonParser.getText()).thenReturn("ikke-en-dato");
 
         assertThrows(RuntimeException.class, () ->

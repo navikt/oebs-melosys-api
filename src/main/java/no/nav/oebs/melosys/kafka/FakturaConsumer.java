@@ -1,8 +1,5 @@
 package no.nav.oebs.melosys.kafka;
 
-import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.oebs.melosys.config.common.logging.LoggingUtils;
 import no.nav.oebs.melosys.db.entity.FakturaStatusFeilImport;
@@ -17,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.json.JsonReadFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -33,9 +33,9 @@ public class FakturaConsumer {
     @Autowired
     private StatusFakturaProducerService fakturaStatusProducerService;
 
-    private static final ObjectMapper objectMapper = JsonMapper.builder()
+    private static final JsonMapper objectMapper = JsonMapper.builder()
             .findAndAddModules()
-            .enable(JsonReadFeature.ALLOW_LEADING_ZEROS_FOR_NUMBERS.mappedFeature())
+            .enable(JsonReadFeature.ALLOW_LEADING_ZEROS_FOR_NUMBERS)
             .build();
 
 
@@ -90,7 +90,7 @@ public class FakturaConsumer {
     private Faktura mapFaktura(String json) {
         try {
             return objectMapper.readValue(json, Faktura.class);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new SerializationException(e);
         }
     }

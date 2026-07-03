@@ -9,7 +9,7 @@ import no.nav.oebs.melosys.exception.JsonMappingException;
 import no.nav.oebs.melosys.exception.UgyldigInputException;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -19,6 +19,7 @@ import org.springframework.kafka.listener.*;
 import org.springframework.kafka.listener.ContainerProperties.AckMode;
 import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 import org.springframework.kafka.support.LogIfLevelEnabled;
+import tools.jackson.databind.exc.UnrecognizedPropertyException;
 
 
 @EnableKafka
@@ -62,7 +63,7 @@ public class KafkaConfig {
         backOffWithMaxRetries.setMaxInterval(retryIntervalMaxLength); // 10 minutter
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer,
                 /*new FixedBackOff(1000, 10)*/backOffWithMaxRetries);
-        errorHandler.addNotRetryableExceptions(UgyldigInputException.class, JsonMappingException.class, InputValidationException.class, org.apache.kafka.common.errors.SerializationException.class, com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException.class);
+        errorHandler.addNotRetryableExceptions(UgyldigInputException.class, JsonMappingException.class, InputValidationException.class, org.apache.kafka.common.errors.SerializationException.class, UnrecognizedPropertyException.class);
         errorHandler.setAckAfterHandle(true);
         errorHandler.setCommitRecovered(true);
         return errorHandler;

@@ -1,19 +1,18 @@
 package no.nav.oebs.melosys.common.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.oebs.melosys.exception.JsonMappingException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Superklasse med felles funksjonalitet for implementasjon av tjenestespesifikke Service-klasser.
  */
 public class ObjektMaps {
 
-	private ObjectMapper objectMapper;
+	private JsonMapper objectMapper;
 
-	public ObjektMaps(ObjectMapper objectMapper) {
+	public ObjektMaps(JsonMapper objectMapper) {
 		this.objectMapper = objectMapper;
-		objectMapper.findAndRegisterModules();
 	}
 
 	/**
@@ -22,7 +21,7 @@ public class ObjektMaps {
 	public <T> String toJson(T object) {
 		try {
 			return objectMapper.writeValueAsString(object);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new JsonMappingException(e);
 		}
 	}
@@ -33,7 +32,7 @@ public class ObjektMaps {
 	public <T> T toObject(String json, Class<T> valueType) {
 		try {
 			return objectMapper.readValue(json, valueType);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new JsonMappingException(e);
 		}
 	}

@@ -1,6 +1,5 @@
 package no.nav.oebs.melosys.kafka;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.oebs.melosys.common.utils.ObjektMaps;
 import no.nav.oebs.melosys.config.common.logging.LoggingUtils;
@@ -16,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
@@ -37,7 +37,7 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
 
     private static final String PLSQL_PROCEDURE = "apps.xxrtv_ar_melosys_pkg.fakturastatus";
 
-    private final ObjektMaps objektMaps = new ObjektMaps(new ObjectMapper());
+    private final ObjektMaps objektMaps = new ObjektMaps(new JsonMapper());
 
     @Value("${app.kafka.topics.faktura-status}")
     private String topic;

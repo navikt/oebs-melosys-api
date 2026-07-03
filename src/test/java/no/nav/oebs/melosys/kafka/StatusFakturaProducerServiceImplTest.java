@@ -111,7 +111,7 @@ class StatusFakturaProducerServiceImplTest {
     }
 
     @Test
-    void hentOgSplitFakturaStatus_withOneLineOfData_sendsOneFakturaStatusMessage() throws Exception {
+    void hentOgSplitFakturaStatus_withOneLineOfData_sendsOneFakturaStatusMessage() {
         when(plsqlProcedureRepository.executeOutProcedure(anyString()))
                 .thenReturn(new PlsqlProcedureResult(FAKTURA_STATUS_JSON, 0, "OK"));
 

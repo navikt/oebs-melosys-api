@@ -1,10 +1,9 @@
 package no.nav.oebs.melosys.kafka;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -14,7 +13,7 @@ public class CustomLocalDateDeserializer extends StdDeserializer<LocalDate> {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy[dd-MMM-yy]");
 
     public CustomLocalDateDeserializer() {
-        this(null);
+        super(LocalDate.class); // ikke null
     }
 
     protected CustomLocalDateDeserializer(Class<?> vc) {
@@ -22,7 +21,7 @@ public class CustomLocalDateDeserializer extends StdDeserializer<LocalDate> {
     }
 
     @Override
-    public LocalDate deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, DateTimeParseException {
+    public LocalDate deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws DateTimeParseException {
             String date = jsonParser.getText();
             try {
                 return LocalDate.parse(date, formatter);
