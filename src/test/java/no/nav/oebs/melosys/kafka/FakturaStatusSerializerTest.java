@@ -27,13 +27,17 @@ class FakturaStatusSerializerTest {
         assertThat(serializer.serialize("topic", null)).isNull();
     }
 
-    void serialize_validFakturaStatus_roundTripForUtvalgteFelterUtenDato() {
+    @Test
+    void serialize_validFakturaStatus_roundTripForAllefelterUtenDato() {
+        FakturaStatus status = new FakturaStatus();
         status.setFakturaReferanseNr("REF-001");
         status.setFakturaNummer("12345");
         status.setStatus("SENDT");
         status.setFakturaBelop(new BigDecimal("1000.00"));
 
-        FakturaStatus deserialized = objektMaps.toObject(new String(result, java.nio.charset.StandardCharsets.UTF_8), FakturaStatus.class);
+        byte[] result = serializer.serialize("topic", status);
+        FakturaStatus deserialized = objektMaps.toObject(new String(result), FakturaStatus.class);
+
         assertThat(deserialized.getFakturaReferanseNr()).isEqualTo("REF-001");
         assertThat(deserialized.getFakturaNummer()).isEqualTo("12345");
         assertThat(deserialized.getStatus()).isEqualTo("SENDT");
@@ -47,14 +51,20 @@ class FakturaStatusSerializerTest {
         FakturaStatus status = new FakturaStatus();
         status.setDato(LocalDate.of(2026, 1, 15));
 
-        assertThat(new String(result, java.nio.charset.StandardCharsets.UTF_8)).contains("\"dato\":\"15-01-2026\"");
+        byte[] result = serializer.serialize("topic", status);
+
+        assertThat(new String(result)).contains("\"dato\":\"15-01-2026\"");
     }
 
     @Test
     void serialize_emptyFakturaStatus_returnsValidJsonBytes() {
         FakturaStatus status = new FakturaStatus();
 
-        assertThat(new String(result, java.nio.charset.StandardCharsets.UTF_8)).contains("fakturaReferanseNr");
+        byte[] result = serializer.serialize("topic", status);
+
+        assertThat(result).isNotNull().isNotEmpty();
+        assertThat(new String(result)).contains("fakturaReferanseNr");
+    }
 
     @Test
     void serialize_isConsistentWithObjektMaps() {
@@ -62,7 +72,10 @@ class FakturaStatusSerializerTest {
         status.setFakturaReferanseNr("REF-002");
         status.setStatus("FEIL");
 
-        assertThat(new String(serialized, java.nio.charset.StandardCharsets.UTF_8)).isEqualTo(fromObjektMaps);
+        byte[] serialized = serializer.serialize("topic", status);
+        String fromObjektMaps = objektMaps.toJson(status);
+
+        assertThat(new String(serialized)).isEqualTo(fromObjektMaps);
     }
 }
 
