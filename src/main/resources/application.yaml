@@ -7,8 +7,6 @@ spring:
     username: ${OEBS_USERNAME}
     password: ${OEBS_PASSWORD}
     url: ${OEBS_URL}
-  flyway:
-    locations: classpath:/db/migration,classpath:/db/oracle
   jpa:
     hibernate:
       ddl-auto: none
@@ -17,9 +15,6 @@ spring:
         dialect: org.hibernate.dialect.OracleDialect
     show-sql: false
     open-in-view: false
-  jackson:
-    parser:
-      allow-numeric-leading-zeros: true
   quartz:
     job-store-type: jdbc
   kafka:
