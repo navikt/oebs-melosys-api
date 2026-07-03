@@ -1,12 +1,14 @@
 package no.nav.oebs.melosys.kafka;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
 
 import no.nav.oebs.melosys.db.entity.FakturaStatus;
 import no.nav.oebs.melosys.exception.InputValidationException;
 import no.nav.oebs.melosys.exception.JsonMappingException;
 import no.nav.oebs.melosys.exception.UgyldigInputException;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
@@ -84,7 +86,8 @@ public class KafkaConfig {
     }
 
     private Map<String, Object> producerProps(KafkaProperties properties){
-        Map<String, Object> producerProperties = properties.buildProducerProperties();
+        Map<String, Object> producerProperties = new HashMap<>(properties.buildProducerProperties());
+        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, FakturaStatusSerializer.class);
         return producerProperties;
     }
 
