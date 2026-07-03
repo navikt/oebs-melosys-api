@@ -8,7 +8,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 public class FakturaStatusSerializer implements Serializer<FakturaStatus> {
 
-    private final JsonMapper jsonMapper = new JsonMapper();
+    private final JsonMapper jsonMapper = JsonMapper.builder().findAndAddModules().build();
 
     @Override
     public byte[] serialize(String topic, FakturaStatus data) {
