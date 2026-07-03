@@ -7,8 +7,6 @@ spring:
     username: username
     password: password
     url: jdbc:oracle:thin:@localhost:1521:testdb
-  flyway:
-    locations: classpath:/db/migration,classpath:/db/oracle
   jpa:
     hibernate:
       ddl-auto: none
@@ -19,9 +17,6 @@ spring:
         dialect: org.hibernate.dialect.OracleDialect
     show-sql: false
     open-in-view: false
-  jackson:
-    parser:
-      allow-numeric-leading-zeros: true
   kafka:
     bootstrap-servers: test-kafka.nav.no:9092
     properties:
@@ -36,7 +31,7 @@ spring:
 
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
       acks: all
       retries: 5
       client-id: client-id-test
