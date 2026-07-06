@@ -2,7 +2,6 @@ package no.nav.oebs.melosys.common.quartz;
 
 import no.nav.oebs.melosys.kafka.ScheduledFakturaStatusProducer;
 import org.quartz.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -17,7 +16,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.quartz.*;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.util.Date;
 
 @Configuration
@@ -27,8 +25,11 @@ public class SpringQuartzScheduler {
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
+
+    public SpringQuartzScheduler(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @PostConstruct
     public void init() {
@@ -47,7 +48,7 @@ public class SpringQuartzScheduler {
     public SchedulerFactoryBean scheduler(@Qualifier("fakturaStatusTrigger") Trigger trigger1,
                                           @Qualifier("fakturaStatusTriggerOnStartup") Trigger trigger2,
                                           JobDetail job,
-                                          DataSource dataSource) throws SQLException {
+                                          DataSource dataSource) {
         SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
         schedulerFactory.setConfigLocation(new ClassPathResource("quartz.properties"));
 
@@ -66,7 +67,7 @@ public class SpringQuartzScheduler {
         return schedulerFactory;
     }
 
-    @Bean(name = "LevFakturaStatus")
+    @Bean(name = "levFakturaStatus")
     public JobDetailFactoryBean levFakturaStatus() {
         JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
         jobDetailFactory.setJobClass(ScheduledFakturaStatusProducer.class);
@@ -77,20 +78,20 @@ public class SpringQuartzScheduler {
     }
 
     @Bean
-    public SimpleTriggerFactoryBean fakturaStatusTrigger(@Qualifier("LevFakturaStatus") JobDetail job){
+    public SimpleTriggerFactoryBean fakturaStatusTrigger(@Qualifier("levFakturaStatus") JobDetail job){
         int frequencyInsec = 60;
         Date startTime = DateBuilder.todayAt(8, 30, 0);
         SimpleTriggerFactoryBean trigger = new SimpleTriggerFactoryBean();
         trigger.setJobDetail(job);
         trigger.setStartTime(startTime);
-        trigger.setRepeatInterval(frequencyInsec * 1000 * 5);
+        trigger.setRepeatInterval(frequencyInsec * 1000 * (long) 5);
         trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
         trigger.setName("Qrtz_Trigger_LevFakuraStatus");
         return trigger;
     }
 
     @Bean
-    public SimpleTriggerFactoryBean fakturaStatusTriggerOnStartup(@Qualifier("LevFakturaStatus") JobDetail job){
+    public SimpleTriggerFactoryBean fakturaStatusTriggerOnStartup(@Qualifier("levFakturaStatus") JobDetail job){
         SimpleTriggerFactoryBean trigger = new SimpleTriggerFactoryBean();
         trigger.setJobDetail(job);
         trigger.setStartDelay(0L);

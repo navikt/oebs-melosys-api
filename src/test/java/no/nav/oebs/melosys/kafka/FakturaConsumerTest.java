@@ -34,36 +34,36 @@ class FakturaConsumerTest {
     private static final String FAKTURA_JSON = "{\"fakturaReferanseNr\":\"REF-001\"}";
 
     @Test
-    void consumeMessages_withOkResult_acknowledgesWithoutSendingFakturaStatus() throws Exception {
-        ConsumerRecord<String, String> record = new ConsumerRecord<>("topic", 0, 0L, "key", FAKTURA_JSON);
-        PlsqlProcedureResult result = new PlsqlProcedureResult((String) null, 0, "OK");
+    void consumeMessages_withOkResult_acknowledgesWithoutSendingFakturaStatus() {
+        ConsumerRecord<String, String> conRecord  = new ConsumerRecord<>("topic", 0, 0L, "key", FAKTURA_JSON);
+        PlsqlProcedureResult result = new PlsqlProcedureResult( null, 0, "OK");
         when(plsqlProcedureRepository.executeInOutProcedure(anyString(), anyString())).thenReturn(result);
 
-        assertDoesNotThrow(() -> fakturaConsumer.consumeMessages(record, acks));
+        assertDoesNotThrow(() -> fakturaConsumer.consumeMessages(conRecord , acks));
 
         verify(acks).acknowledge();
         verify(fakturaStatusProducerService, never()).sendFakturaStatusVedFeil(any());
     }
 
     @Test
-    void consumeMessages_withExceptionResult_sendsStatusVedFeilAndAcknowledges() throws Exception {
-        ConsumerRecord<String, String> record = new ConsumerRecord<>("topic", 0, 0L, "key", FAKTURA_JSON);
-        PlsqlProcedureResult result = new PlsqlProcedureResult((String) null, -1, "Feil i input");
+    void consumeMessages_withExceptionResult_sendsStatusVedFeilAndAcknowledges() {
+        ConsumerRecord<String, String> conRecord  = new ConsumerRecord<>("topic", 0, 0L, "key", FAKTURA_JSON);
+        PlsqlProcedureResult result = new PlsqlProcedureResult( null, -1, "Feil i input");
         when(plsqlProcedureRepository.executeInOutProcedure(anyString(), anyString())).thenReturn(result);
 
-        assertDoesNotThrow(() -> fakturaConsumer.consumeMessages(record, acks));
+        assertDoesNotThrow(() -> fakturaConsumer.consumeMessages(conRecord , acks));
 
         verify(fakturaStatusProducerService).sendFakturaStatusVedFeil(any(FakturaStatusFeilImport.class));
         verify(acks).acknowledge();
     }
 
     @Test
-    void consumeMessages_withUnknownMessageNumber_acknowledgesAndThrowsRuntimeException() throws Exception {
-        ConsumerRecord<String, String> record = new ConsumerRecord<>("topic", 0, 0L, "key", FAKTURA_JSON);
-        PlsqlProcedureResult result = new PlsqlProcedureResult((String) null, 99, "Ukjent");
+    void consumeMessages_withUnknownMessageNumber_acknowledgesAndThrowsRuntimeException() {
+        ConsumerRecord<String, String> conRecord  = new ConsumerRecord<>("topic", 0, 0L, "key", FAKTURA_JSON);
+        PlsqlProcedureResult result = new PlsqlProcedureResult( null, 99, "Ukjent");
         when(plsqlProcedureRepository.executeInOutProcedure(anyString(), anyString())).thenReturn(result);
 
-        assertThrows(RuntimeException.class, () -> fakturaConsumer.consumeMessages(record, acks));
+        assertThrows(RuntimeException.class, () -> fakturaConsumer.consumeMessages(conRecord , acks));
 
         verify(acks).acknowledge();
     }

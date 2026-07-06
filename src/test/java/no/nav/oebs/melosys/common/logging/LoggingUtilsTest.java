@@ -65,7 +65,7 @@ class LoggingUtilsTest {
         void maskIfFnr_withNullText_returns_null_string() {
             String result = LoggingUtils.maskIfFnr(null);
 
-            assertEquals(null, result);
+            assertEquals("(null)", result);
         }
 
         @Test

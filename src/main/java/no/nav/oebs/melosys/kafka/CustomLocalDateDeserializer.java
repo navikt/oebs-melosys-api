@@ -22,11 +22,7 @@ public class CustomLocalDateDeserializer extends StdDeserializer<LocalDate> {
 
     @Override
     public LocalDate deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws DateTimeParseException {
-            String date = jsonParser.getText();
-            try {
-                return LocalDate.parse(date, formatter);
-            } catch (DateTimeParseException e) {
-                throw new RuntimeException(e);
-            }
+            String date = jsonParser.getString();
+            return LocalDate.parse(date, formatter);
     }
 }
