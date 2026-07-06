@@ -20,6 +20,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Slf4j
 @Component
@@ -71,7 +72,7 @@ public class FakturaConsumer {
     private KallLogg KallLoggBuilder(String procedureName, String dataIn, long executionTime, PlsqlProcedureResult result, Exception exception, String kafkaPosition){
         KallLogg kallLogg = KallLogg.builder()
                 .korrelasjonId(plsqlProcedureRepository.generateAndSetCorrelationId())
-                .tidspunkt(LocalDateTime.now())
+                .tidspunkt(LocalDateTime.now(ZoneId.systemDefault()))
                 .type(KallLogg.TYPE_KAFKA)
                 .kallRetning(KallLogg.RETNING_INN)
                 .operation(procedureName)

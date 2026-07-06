@@ -8,6 +8,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,13 +19,14 @@ class FakturaStatusSerializerTest {
 
     @BeforeEach
     void setUp() {
-        serializer = new FakturaStatusSerializer();
-        objektMaps = new ObjektMaps(new JsonMapper());
+        JsonMapper jsonMapper = JsonMapper.builder().findAndAddModules().build();
+        serializer = new FakturaStatusSerializer(jsonMapper);
+        objektMaps = new ObjektMaps(jsonMapper);
     }
 
     @Test
-    void serialize_nullData_returnsNull() {
-        assertThat(serializer.serialize("topic", null)).isNull();
+    void serialize_nullData_returnsEmptyArray() {
+        assertThat(serializer.serialize("topic", null)).isEmpty();
     }
 
     @Test
@@ -49,7 +51,7 @@ class FakturaStatusSerializerTest {
         // @JsonFormat(pattern="dd-MM-yyyy") styrer ut-formatet.
         // CustomLocalDateDeserializer forventer dd.MM.yyyy inn — asymmetri er bevisst av design.
         FakturaStatus status = new FakturaStatus();
-        status.setDato(LocalDate.of(2026, 1, 15));
+        status.setDato(LocalDate.of(2026, Month.JANUARY, 15));
 
         byte[] result = serializer.serialize("topic", status);
 
@@ -78,4 +80,3 @@ class FakturaStatusSerializerTest {
         assertThat(new String(serialized)).isEqualTo(fromObjektMaps);
     }
 }
-

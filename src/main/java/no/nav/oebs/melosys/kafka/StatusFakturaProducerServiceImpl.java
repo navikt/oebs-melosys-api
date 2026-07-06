@@ -6,10 +6,10 @@ import no.nav.oebs.melosys.config.common.logging.LoggingUtils;
 import no.nav.oebs.melosys.db.entity.FakturaStatus;
 import no.nav.oebs.melosys.db.entity.FakturaStatusFeilImport;
 import no.nav.oebs.melosys.db.entity.KallLogg;
+import no.nav.oebs.melosys.exception.InputValidationException;
 import no.nav.oebs.melosys.db.repository.PlsqlMessageCodes;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureRepository;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -19,6 +19,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -28,16 +29,21 @@ import java.util.stream.Stream;
 public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerService {
 
     private static final String KAFKA_INN_FEIL = "FEIL VED IMPORT";
-    @Autowired
-    @Qualifier("fakturaStatusTemplate")
-    private KafkaTemplate<String, FakturaStatus> kafkaTemplate;
-
-    @Autowired
-    private PlsqlProcedureRepository plsqlProcedureRepository;
+    private final KafkaTemplate<String, FakturaStatus> kafkaTemplate;
+    private final PlsqlProcedureRepository plsqlProcedureRepository;
 
     private static final String PLSQL_PROCEDURE = "apps.xxrtv_ar_melosys_pkg.fakturastatus";
 
-    private final ObjektMaps objektMaps = new ObjektMaps(new JsonMapper());
+    private final ObjektMaps objektMaps;
+
+    public StatusFakturaProducerServiceImpl(
+            @Qualifier("fakturaStatusTemplate") KafkaTemplate<String, FakturaStatus> kafkaTemplate,
+            PlsqlProcedureRepository plsqlProcedureRepository,
+            JsonMapper jsonMapper) {
+        this.kafkaTemplate = kafkaTemplate;
+        this.plsqlProcedureRepository = plsqlProcedureRepository;
+        this.objektMaps = new ObjektMaps(jsonMapper);
+    }
 
     @Value("${app.kafka.topics.faktura-status}")
     private String topic;
@@ -45,6 +51,10 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
 
     @Override
     public void sendFakturaStatus(FakturaStatus status, PlsqlProcedureResult result, String procedureName) {
+        if (status == null) {
+            throw new InputValidationException("Fakturastatus kan ikke være null ved sending til Kafka.");
+        }
+
         Exception exception = null;
         long startTime = System.currentTimeMillis();
         String korrelasjonId = plsqlProcedureRepository.generateAndSetCorrelationId();
@@ -72,7 +82,7 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
             log.info("dataOut: {}", dataOut);
             long endTime = System.currentTimeMillis();
             plsqlProcedureRepository.saveKallLogg(
-                    KallLoggBuilder(korrelasjonId , procedureName, dataOut, endTime-startTime, result, exception));
+                    kallLoggBuilder(korrelasjonId , procedureName, dataOut, endTime-startTime, result, exception));
         }
     }
 
@@ -95,10 +105,10 @@ public class StatusFakturaProducerServiceImpl implements StatusFakturaProducerSe
         }
     }
 
-    private KallLogg KallLoggBuilder(String korrelasjonId, String procedureName, String dataOut, long executionTime, PlsqlProcedureResult result, Exception exception) {
+    private KallLogg kallLoggBuilder(String korrelasjonId, String procedureName, String dataOut, long executionTime, PlsqlProcedureResult result, Exception exception) {
         return KallLogg.builder()
                 .korrelasjonId(korrelasjonId)
-                .tidspunkt(LocalDateTime.now())
+                .tidspunkt(LocalDateTime.now(ZoneId.systemDefault()))
                 .type(KallLogg.TYPE_KAFKA)
                 .kallRetning(KallLogg.RETNING_UT)
                 .operation(procedureName)
