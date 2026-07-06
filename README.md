@@ -1,77 +1,145 @@
 
-# OEBS-Melosys API
+# oebs-melosys-api
 
-REST API for integrasjon mellom OEBS og Melosys gjennom Kafka-meldingsutveksling.
+Kafka bridge service that processes invoices from Melosys and sends invoice statuses back to Melosys via Kafka,
+using the OEBS Oracle database as the processing backend.
+The service runs in sikker sone (FSS) and acts as the integration layer between Melosys and OEBS for invoice handling.
 
-## Arkitektur
-Se møtedokumentasjon under [dokumentasjon](#dokumentasjon) for mer informasjon om arkitektur og design av denne tjenesten.
+---
 
-## Funkjsonalitet
-Det flyter fakturaer fra Melosys til OEBS, og statusoppdateringer fra OEBS tilbake til Melosys. 
-Dette muliggjør at fakturaer som produseres i Melosys kan sendes ut til brukere via OEBS, 
-og at status på disse fakturaene kan oppdateres i Melosys basert på informasjon fra OEBS.
-OeBS sender status på faktura tilbake til melosys. Dette gjøres en gang i døgnet. Feilede faktura opprettelser
-sender feilmelding med en gang
+## Architecture
 
-OeBS sitt t1 miljø er koblet mot Melosys sitt Q1 miljø, og OeBS sitt Q1 miljø er koblet mot melosys sitt Q2 miljø
-Dette kan ikke endres uten at det avtales med melosys, de bruker i hovedsak OeBS t1 til sin testing.
+The service acts as a bridge between Melosys (GCP) and the OEBS Oracle database (sikker sone).
+Invoices produced in Melosys are sent to OEBS via Kafka, where they are processed and sent out to users.
+Invoice statuses are sent back from OEBS to Melosys once a day, allowing Melosys to stay up to date on invoice state.
+If an invoice fails to import, an error status is sent back immediately.
 
-## Avhengigheter
-- OeBS, oppretter faktura og sender ut til brukere basert på faturaer som produseres i Melosys
-- Aiven Kafka, for meldingsutveksling mellom Melosys og OEBS(fakturaer og faktura status)
-- Melosys-api sender fakturaer til Kafka topic som denne tjenesten konsumerer
-- Quartz, for å kjøre batch job som sender status på fakturaer tilbake til Melosys en gang i døgnet
-- GSA, for å kunne kjøre tjenesten lokalt og teste funksjonalitet uten å måtte deploye til et miljø
+![Service illustration](docs/service-illustration.png)
 
-Konfig av OeBS sine kafka topics finnes [her](https://github.com/navikt/oebs-iac)
-Konfig av Melosys sine kafka topics finnes [her](https://github.com/navikt/melosys-iac)
-Kafka manager er satt opp og configurasjon av topics kan sees i denne [repoen](https://github.com/navikt/team-oebs-kafka-manager/tree/main)
-Kafka manager trenger en oppdatering slik at den fungerer igjen etter at image ble flyttet til GHCR
-Det er en fordel å ha kubernetes satt opp, men det meste kan sees og endres på gjennom nais console
+All inbound and outbound calls are logged to the OEBS database via `KallLogg`.
 
-## Hvordan kjøre lokalt
-- Tjenesten kan per i dag ikke kjøres lokalt, men med GSA åpner det for muligheten, det som da må gjøres er å spinne opp
-en lokal Kafka instans og konfigurere tjenesten til å bruke denne, og eventuelt mocke OeBS for å kunne teste funksjonalitet lokalt
+---
+
+## Functionality
+
+Two flows are handled:
+- **Inbound:** Invoice messages from Melosys are consumed from Kafka and passed to the OEBS Oracle database via the PL/SQL procedure `apps.xxrtv_ar_melosys_pkg.fakturaimport`. If the import fails, an error status is immediately sent back to Melosys via the faktura-status topic.
+- **Outbound:** A scheduled Quartz job queries the OEBS Oracle database via `apps.xxrtv_ar_melosys_pkg.fakturastatus` and publishes invoice statuses to Melosys via the faktura-status Kafka topic. The job runs every 5 minutes starting at 08:30, and also once on startup.
+
+
+
+### Instances and environments
+
+The service runs with three instances: t1, q1, and prod.
+
+- **t1** runs in `dev-fss`, reading invoices from Melosys q1
+- **q1** runs in `dev-fss`, reading invoices from Melosys q2
+- **prod** runs in `prod-fss`, reading invoices from Melosys prod
+
+**Note:** The environment coupling between OEBS and Melosys cannot be changed without coordinating with the Melosys team. Melosys primarily uses OEBS t1 for their testing.
+
+Deployment order: **t1 → q1 → prod**. Production deployment requires manual trigger via `workflow_dispatch`.
+
+### Kafka topics
+
+| Topic | Format | Topic configuration | Description |
+|-------|--------|---------------------|-------------|
+| `teammelosys.faktura-bestilt.v1` | JSON | [melosys-iac](https://github.com/navikt/melosys-iac) | Invoices sent from Melosys to OEBS for processing |
+| `team-oebs.faktura-status.v1` | JSON | [oebs-iac](https://github.com/navikt/oebs-iac) | Invoice statuses sent from OEBS back to Melosys |
+
+### Invoice processing
+
+1. An invoice message is consumed from the `faktura-bestilt` topic
+2. The message is passed to the OEBS Oracle database via `apps.xxrtv_ar_melosys_pkg.fakturaimport`
+3. On success, the offset is committed
+4. On a known import error (`EXCEPTION`), an error status is immediately sent back to Melosys via the `faktura-status` topic, and the offset is committed
+5. On an unknown database error, an exception is thrown (offset not committed)
+
+### Invoice status job
+
+A Quartz scheduler job (`ScheduledFakturaStatusProducer`) runs on a fixed schedule:
+
+| Trigger | Schedule |
+|---------|----------|
+| On startup | Once, immediately |
+| Recurring | Every 5 minutes, starting at 08:30 |
+
+The job calls `apps.xxrtv_ar_melosys_pkg.fakturastatus`, splits the result line by line,
+and publishes each invoice status individually to the `faktura-status` Kafka topic.
+
+### OEBS PL/SQL package
+
+Both procedures are part of the `xxrtv_ar_melosys_pkg` package in the OEBS Oracle database:
+
+| File | Description |
+|------|-------------|
+| [xxrtv_ar_melosys_pkg.pks](https://github.com/navikt/oebs/blob/main/admin/sql/xxrtv_ar_melosys_pkg.pks) | Package specification — defines the public interface |
+| [xxrtv_ar_melosys_pkg.pkb](https://github.com/navikt/oebs/blob/main/admin/sql/xxrtv_ar_melosys_pkg.pkb) | Package body — contains the implementation |
+
+---
+
+## Dependencies
+
+| System | Purpose |
+|--------|---------|
+| **OEBS Oracle Database** | Processes inbound invoices via PL/SQL; source of invoice statuses; stores all call logs via `KallLogg` |
+| **Melosys** | Sends invoices to the `faktura-bestilt` topic; receives invoice statuses from the `faktura-status` topic |
+| **Aiven Kafka** | Message transport between Melosys (GCP) and this service (FSS) |
+| **Quartz** | Clustered scheduler for the recurring invoice status job, backed by the OEBS Oracle database |
+| **NAIS platform** | Container orchestration, secrets management, and deployment |
+
+### Consumers
+The only consumer of the `faktura-status` topic is Melosys. Changes to the message format must be coordinated with the Melosys team
+in the slack channel [melosys-løst-oebs](https://nav-it.slack.com/archives/C03UZCM7RS5).
+
+---
+
+## Running Locally
+
+Setup for running locally has not been configured yet, because the service requires
+access to kafka topics. The T1 instance can be used for testing.
+
+---
 
 ## Testing
-- Hvordan er funksjonalitet testet?
-- Er det satt opp integrasjonstester, og hvordan kjøre disse?
 
-## Overvåkning og alarmering
-- Alarmering er satt opp i Melosys, men ikke for selve denne tjenesten. se TODO
-- Overvåkning av denne tjenesten er ikke satt opp, men OeBS komponenten overvåkes av OeBS-drift se TODO
+Unit tests are set up using JUnit and Mockito.
+
+---
+
+## Monitoring and Alerting
+
+No alerting is currently configured for this service. Alerting for the invoice flow is handled on the Melosys side.
+Issues can be detected by observing `KallLogg` entries in the OEBS database, or through errors reported by Melosys.
+
+Standard application monitoring is available via Grafana dashboards:
+- [Grafana dashboard for t1](https://grafana.nav.cloud.nais.io/a/nais-apm-app/services/team-oebs/oebs-melosys-api-t1?namespace=team-oebs&environment=dev-fss)
+- [Grafana dashboard for q1](https://grafana.nav.cloud.nais.io/a/nais-apm-app/services/team-oebs/oebs-melosys-api-q1?namespace=team-oebs&environment=dev-fss)
+- [Grafana dashboard for prod](https://grafana.nav.cloud.nais.io/a/nais-apm-app/services/team-oebs/oebs-melosys-api?namespace=team-oebs&environment=prod-fss)
+
+---
 
 ## Deploy
-Per i dag er det egen branch for hvert miljø og deploy til prod skjer via main branch.
-en leveranse skal gjennom alle branches før prod, men det er ikke satt opp en automatisk sjekk for dette
 
-## Dokumentasjon
-- Det finnes en del dokumentasjon i Confluence, spesielt møter og diskusjoner rundt oppsett av faktura
-- [Melosys dokumentasjon](https://confluence.adeo.no/spaces/TEESSI/pages/431012462/Melosys+trygdeavgift) dette er melosys
-  sin interndokumentasjon, men viser også deler av OeBS integrasjonen i denne figuren.
-- [Melosys testidenter](https://confluence.adeo.no/spaces/TEESSI/pages/544324711/Testidenter+til+bruk+i+Melosys+mot+OeBS)
-  ser ikke oppdatert ut, men er testidenter som Melosys har brukt.
-- [Besluttningsmøte](https://confluence.adeo.no/spaces/TEESSI/pages/478487910/Beslutningsunderlag+samhandling+Melosys+og+OEBS)
-  Møte hvor det ble besluttet at denne tjenesten skulle utvikles, og ikke bruke en eksisterende løsning via avgiftssystemet
-- [Avklaring fakturafelter](https://confluence.adeo.no/spaces/TEESSI/pages/478274543/Samhandling+Melosys+og+OEBS+-informasjonsutveksling)
-- [Designdokument](https://confluence.adeo.no/spaces/TEESSI/pages/505513949/2022-11-01+M%C3%B8tereferat+-+Melosys+og+OEBS)
-  Merk at dette dokumentet er fra starten av prosjektet, og det har vært en del endringer i oppsett og funksjonalitet siden dette dokumentet ble skrevet
-  I hovedsak gjelder dette navnene på topic, det er også et endepunkt i test for å produsere fakturameldinger, dette er ikke aktivt i produksjon
+### Branching strategy
+- Feature development should happen on dedicated branches with a PR to `main`.
+- Merging to `main` triggers deployment to **T1 and Q1** automatically.
+- Deployment to **production** requires a manual workflow dispatch with `deploy_prod: true`.
 
-Det finnes en swagger, men den er ikke funksjonell per i dag, det vil kun være test endepunkt det er reelt for, kan nok fjernes
-eventuelt oppdatere swagger(fjerne artifakter fra EyeShare sin swagger) og legge protection på endepunkt
+### Referencing Jira tasks
+Include the Jira task key in the branch name and/or commit message. All PRs are squash-merged into main, so the most important thing is that the Jira issue is referenced in the squash commit message and that the PR title references the Jira issue. For example, if working on `OEBS-123`, the commit message should include `feat(OEBS-123): beskrivelse` and the PR title should follow the same format. If a PR covers multiple Jira issues, all should be referenced, e.g. `feat(OEBS-123, OEBS-124): beskrivelse`. All individual commits should be listed in the PR description.
 
-## TODO
-- [x] Endre props innlasting
-- [ ] Oppdatere integrasjonstegning
-- [ ] Legge til protection på test endepunkt, og eventuelt azure-token-generator
-- [ ] Legge til tester
-- [ ] Legge til overvåkning og alarmering(alarmer går hos melosys)
-- [ ] Fjerne DLQ topic eller utvide denne til å håndtere feilede meldinger på en bedre måte(feilmeldinger så langt
-  har ikke hatt nytte av DLQ da feilene har måtte håndteres manuelt av ØS)
-- [ ] Sette opp automatisk sjekk for at leveranser går gjennom alle branches før prod
-- [ ] Oppdatere Kafka manager slik at den fungerer igjen etter at image ble flyttet til GHCR
+### Promotion criteria
+Before deploying to production:
+- All tests must pass (`mvn verify`).
 
-**Versjon**: 1.3.2 | **Java**: 21 | **Spring Boot**: 3.4.5
 ---
-**Sist oppdatert**: 2. Mars 2026 | **Versjon**: 1.3.2
+
+## Documentation
+
+- [Melosys documentation](https://confluence.adeo.no/spaces/TEESSI/pages/431012462/Melosys+trygdeavgift) — Melosys internal documentation, includes a diagram showing the OEBS integration
+- [Decision meeting](https://confluence.adeo.no/spaces/TEESSI/pages/478487910/Beslutningsunderlag+samhandling+Melosys+og+OEBS) — Background for why this service was built instead of using the existing tax system integration
+- [Invoice field clarification](https://confluence.adeo.no/spaces/TEESSI/pages/478274543/Samhandling+Melosys+og+OEBS+-informasjonsutveksling)
+- [Design document](https://confluence.adeo.no/spaces/TEESSI/pages/505513949/2022-11-01+M%C3%B8tereferat+-+Melosys+og+OEBS) — Note: written at the start of the project; topic names and some functionality have changed since then
+- [Melosys test identifiers](https://confluence.adeo.no/spaces/TEESSI/pages/544324711/Testidenter+til+bruk+i+Melosys+mot+OeBS)
+
