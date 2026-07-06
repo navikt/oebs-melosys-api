@@ -55,5 +55,7 @@ spec:
   envFrom:
     - secret: oebs-melosys-api-q1
 
-  ingresses:
-     - "https://oebs-melosys-api-q1.intern.dev.nav.no"
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
