@@ -1,6 +1,5 @@
 package no.nav.oebs.melosys.kafka;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,9 +7,6 @@ import no.nav.oebs.melosys.db.entity.FakturaStatus;
 import no.nav.oebs.melosys.exception.InputValidationException;
 import no.nav.oebs.melosys.exception.JsonMappingException;
 import no.nav.oebs.melosys.exception.UgyldigInputException;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -39,7 +35,6 @@ public class KafkaConfig {
 
     @Value("${app.kafka.retry-interval-max-length}")
     private long retryIntervalMaxLength;
-    private static final String DEAD_LETTER_RECOVERY_TOPIC = "team-oebs.faktura-import-dlq.v1-q2";
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
@@ -50,22 +45,17 @@ public class KafkaConfig {
         factory.getContainerProperties().setCommitLogLevel(LogIfLevelEnabled.Level.INFO); // log commits av offset
 
         // retries og backoff for commits
-        factory.getContainerProperties().setCommitRetries(retryMaxAttempts);
-        factory.getContainerProperties().setSyncCommitTimeout(Duration.ofMillis(retryBackoffPeriod));
-        factory.setCommonErrorHandler(defaultErrorHandler(properties));
+        factory.setCommonErrorHandler(defaultErrorHandler());
         return factory;
     }
 
     @Bean
-    public DefaultErrorHandler defaultErrorHandler(KafkaProperties properties) {
-        ConsumerRecordRecoverer recoverer = new DeadLetterPublishingRecoverer(new KafkaTemplate<>(deadLetterProducerFactory(properties)),
-                (consumerRecord, exception) -> new TopicPartition(DEAD_LETTER_RECOVERY_TOPIC,0));
+    public DefaultErrorHandler defaultErrorHandler() {
         ExponentialBackOffWithMaxRetries backOffWithMaxRetries = new ExponentialBackOffWithMaxRetries(retryMaxAttempts);
         backOffWithMaxRetries.setInitialInterval(retryBackoffPeriod); // 30 sekunder
         backOffWithMaxRetries.setMultiplier(2);
         backOffWithMaxRetries.setMaxInterval(retryIntervalMaxLength); // 10 minutter
-        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer,
-                /*new FixedBackOff(1000, 10)*/backOffWithMaxRetries);
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(backOffWithMaxRetries);
         errorHandler.addNotRetryableExceptions(UgyldigInputException.class, JsonMappingException.class, InputValidationException.class, org.apache.kafka.common.errors.SerializationException.class, UnrecognizedPropertyException.class);
         errorHandler.setAckAfterHandle(true);
         errorHandler.setCommitRecovered(true);
@@ -93,30 +83,11 @@ public class KafkaConfig {
         return new HashMap<>(properties.buildProducerProperties());
     }
 
-    @Bean(name="deadLetterProducerFactory")
-    public ProducerFactory<String, String> deadLetterProducerFactory(KafkaProperties properties){
-        return new DefaultKafkaProducerFactory<>(deadLetterProducerProps(properties));
-    }
-
-    @Bean(name = "deadLetterProducerProps")
-    protected Map<String, Object> deadLetterProducerProps(KafkaProperties properties){
-        Map<String, Object> producerProperties = new HashMap<>(properties.buildProducerProperties());
-        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        return producerProperties;
-    }
-
-    @Bean(name = "deadLetterTemplate")
-    public KafkaTemplate<String, String> deadLetterKafkaTemplate(KafkaProperties properties) {
-        return new KafkaTemplate<>(deadLetterProducerFactory(properties));
-    }
-
     @Bean(name = "fakturaStatusTemplate")
     public KafkaTemplate<String, FakturaStatus> kafkaTemplate(
             KafkaProperties properties,
             FakturaStatusSerializer fakturaStatusSerializer) {
         return new KafkaTemplate<>(producerFactory(properties, fakturaStatusSerializer));
     }
-
-    @Bean public CommonLoggingErrorHandler errorHandler() { return new CommonLoggingErrorHandler(); }
 
 }
