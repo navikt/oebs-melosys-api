@@ -4,16 +4,17 @@ import no.nav.oebs.melosys.db.entity.FakturaStatus;
 import no.nav.oebs.melosys.db.entity.FakturaStatusFeilImport;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureRepository;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureResult;
+import no.nav.oebs.melosys.exception.InputValidationException;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.test.util.ReflectionTestUtils;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -31,7 +32,6 @@ class StatusFakturaProducerServiceImplTest {
     @Mock
     private PlsqlProcedureRepository plsqlProcedureRepository;
 
-    @InjectMocks
     private StatusFakturaProducerServiceImpl service;
 
     private static final String TOPIC = "faktura-status-topic";
@@ -39,11 +39,15 @@ class StatusFakturaProducerServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        service = new StatusFakturaProducerServiceImpl(
+                kafkaTemplate,
+                plsqlProcedureRepository,
+                JsonMapper.builder().findAndAddModules().build());
         ReflectionTestUtils.setField(service, "topic", TOPIC);
     }
 
     @Test
-    void sendFakturaStatus_success_sendsToKafkaAndSavesKallLogg() throws Exception {
+    void sendFakturaStatus_success_sendsToKafkaAndSavesKallLogg() {
         FakturaStatus fakturaStatus = new FakturaStatus();
         fakturaStatus.setFakturaReferanseNr("REF-001");
 
@@ -58,7 +62,7 @@ class StatusFakturaProducerServiceImplTest {
 
         assertDoesNotThrow(() -> service.sendFakturaStatus(fakturaStatus, plsqlResult, "FAKTURA.PROSEDYRE"));
 
-        verify(kafkaTemplate).send(eq(TOPIC), eq(fakturaStatus));
+        verify(kafkaTemplate).send(TOPIC, fakturaStatus);
         verify(plsqlProcedureRepository).saveKallLogg(any());
     }
 
@@ -75,6 +79,13 @@ class StatusFakturaProducerServiceImplTest {
     }
 
     @Test
+    void sendFakturaStatus_nullStatus_throwsInputValidationException() {
+        assertThrows(InputValidationException.class, () ->
+                service.sendFakturaStatus(null, null, "FAKTURA.PROSEDYRE"));
+        verifyNoInteractions(kafkaTemplate);
+    }
+
+    @Test
     void sendFakturaStatusVedFeil_delegatesToSendFakturaStatus() {
         FakturaStatusFeilImport feilStatus = new FakturaStatusFeilImport("REF-001", "Noe gikk galt");
 
@@ -87,7 +98,7 @@ class StatusFakturaProducerServiceImplTest {
 
         assertDoesNotThrow(() -> service.sendFakturaStatusVedFeil(feilStatus));
 
-        verify(kafkaTemplate).send(eq(TOPIC), eq(feilStatus));
+        verify(kafkaTemplate).send(TOPIC, feilStatus);
     }
 
     @Test
@@ -122,6 +133,9 @@ class StatusFakturaProducerServiceImplTest {
 
         service.hentOgSplitFakturaStatus();
 
-        verify(kafkaTemplate, times(1)).send(eq(TOPIC), any(FakturaStatus.class));
+        FakturaStatus expected = new FakturaStatus();
+        expected.setFakturaReferanseNr("REF-001");
+        expected.setStatus("SENDT");
+        verify(kafkaTemplate, times(1)).send(TOPIC, expected);
     }
 }

@@ -10,6 +10,7 @@ import no.nav.oebs.melosys.exception.JsonMappingException;
 import no.nav.oebs.melosys.exception.UgyldigInputException;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -38,7 +39,7 @@ public class KafkaConfig {
 
     @Value("${app.kafka.retry-interval-max-length}")
     private long retryIntervalMaxLength;
-    private final String deadLetterRecoveryTopic = "team-oebs.faktura-import-dlq.v1-q2";
+    private static final String DEAD_LETTER_RECOVERY_TOPIC = "team-oebs.faktura-import-dlq.v1-q2";
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
@@ -58,7 +59,7 @@ public class KafkaConfig {
     @Bean
     public DefaultErrorHandler defaultErrorHandler(KafkaProperties properties) {
         ConsumerRecordRecoverer recoverer = new DeadLetterPublishingRecoverer(new KafkaTemplate<>(deadLetterProducerFactory(properties)),
-                (consumerRecord, exception) -> new TopicPartition(deadLetterRecoveryTopic,0));
+                (consumerRecord, exception) -> new TopicPartition(DEAD_LETTER_RECOVERY_TOPIC,0));
         ExponentialBackOffWithMaxRetries backOffWithMaxRetries = new ExponentialBackOffWithMaxRetries(retryMaxAttempts);
         backOffWithMaxRetries.setInitialInterval(retryBackoffPeriod); // 30 sekunder
         backOffWithMaxRetries.setMultiplier(2);
@@ -76,19 +77,20 @@ public class KafkaConfig {
     }
 
     private Map<String, Object> consumerProps(KafkaProperties properties) {
-        Map<String, Object> consumerProperties = properties.buildConsumerProperties();
-
-        return  consumerProperties;
+        return properties.buildConsumerProperties();
     }
     @Bean
-    public ProducerFactory<String, FakturaStatus> producerFactory(KafkaProperties properties) {
-        return new DefaultKafkaProducerFactory<>(producerProps(properties));
+    public ProducerFactory<String, FakturaStatus> producerFactory(
+            KafkaProperties properties,
+            FakturaStatusSerializer fakturaStatusSerializer) {
+        DefaultKafkaProducerFactory<String, FakturaStatus> producerFactory =
+                new DefaultKafkaProducerFactory<>(producerProps(properties));
+        producerFactory.setValueSerializer(fakturaStatusSerializer);
+        return producerFactory;
     }
 
     private Map<String, Object> producerProps(KafkaProperties properties){
-        Map<String, Object> producerProperties = new HashMap<>(properties.buildProducerProperties());
-        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, FakturaStatusSerializer.class);
-        return producerProperties;
+        return new HashMap<>(properties.buildProducerProperties());
     }
 
     @Bean(name="deadLetterProducerFactory")
@@ -98,7 +100,8 @@ public class KafkaConfig {
 
     @Bean(name = "deadLetterProducerProps")
     protected Map<String, Object> deadLetterProducerProps(KafkaProperties properties){
-        Map<String, Object> producerProperties = properties.buildProducerProperties();
+        Map<String, Object> producerProperties = new HashMap<>(properties.buildProducerProperties());
+        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         return producerProperties;
     }
 
@@ -108,8 +111,10 @@ public class KafkaConfig {
     }
 
     @Bean(name = "fakturaStatusTemplate")
-    public KafkaTemplate<String, FakturaStatus> kafkaTemplate(KafkaProperties properties) {
-        return new KafkaTemplate<>(producerFactory(properties));
+    public KafkaTemplate<String, FakturaStatus> kafkaTemplate(
+            KafkaProperties properties,
+            FakturaStatusSerializer fakturaStatusSerializer) {
+        return new KafkaTemplate<>(producerFactory(properties, fakturaStatusSerializer));
     }
 
     @Bean public CommonLoggingErrorHandler errorHandler() { return new CommonLoggingErrorHandler(); }
