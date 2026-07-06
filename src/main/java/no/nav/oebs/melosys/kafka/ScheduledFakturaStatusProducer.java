@@ -3,13 +3,15 @@ package no.nav.oebs.melosys.kafka;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
 public class ScheduledFakturaStatusProducer  implements Job{
 
-    @Autowired
-    StatusFakturaProducerService statusFakturaProducerService;
+    private final StatusFakturaProducerService statusFakturaProducerService;
+
+    public ScheduledFakturaStatusProducer(StatusFakturaProducerService statusFakturaProducerService) {
+        this.statusFakturaProducerService = statusFakturaProducerService;
+    }
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {

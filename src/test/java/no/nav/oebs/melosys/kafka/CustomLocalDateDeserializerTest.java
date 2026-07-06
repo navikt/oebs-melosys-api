@@ -9,6 +9,7 @@ import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 
 import java.time.LocalDate;
+import java.time.Month;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -31,16 +32,16 @@ class CustomLocalDateDeserializerTest {
 
     @Test
     void deserialize_withValidDdMmYyyyFormat_returnsLocalDate(){
-        when(jsonParser.getText()).thenReturn("30.06.2026");
+        when(jsonParser.getString()).thenReturn("30.06.2026");
 
         LocalDate result = deserializer.deserialize(jsonParser, deserializationContext);
 
-        assertEquals(LocalDate.of(2026, 6, 30), result);
+        assertEquals(LocalDate.of(2026, Month.JUNE, 30), result);
     }
 
     @Test
     void deserialize_withIsoFormat_throwsRuntimeException() {
-        when(jsonParser.getText()).thenReturn("2026-06-30");
+        when(jsonParser.getString()).thenReturn("2026-06-30");
 
         assertThrows(RuntimeException.class, () ->
                 deserializer.deserialize(jsonParser, deserializationContext));
@@ -48,7 +49,7 @@ class CustomLocalDateDeserializerTest {
 
     @Test
     void deserialize_withEmptyString_throwsRuntimeException() {
-        when(jsonParser.getText()).thenReturn("");
+        when(jsonParser.getString()).thenReturn("");
 
         assertThrows(RuntimeException.class, () ->
                 deserializer.deserialize(jsonParser, deserializationContext));
@@ -56,7 +57,7 @@ class CustomLocalDateDeserializerTest {
 
     @Test
     void deserialize_withInvalidText_throwsRuntimeException() {
-        when(jsonParser.getText()).thenReturn("ikke-en-dato");
+        when(jsonParser.getString()).thenReturn("ikke-en-dato");
 
         assertThrows(RuntimeException.class, () ->
                 deserializer.deserialize(jsonParser, deserializationContext));
