@@ -5,6 +5,7 @@ import java.sql.Clob;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -221,7 +222,7 @@ public class PlsqlProcedureRepository {
 
 		KallLogg kallLogg = KallLogg.builder() //
 				.korrelasjonId(MdcOperations.generateCorrelationId())
-				.tidspunkt(LocalDateTime.now()) //
+				.tidspunkt(LocalDateTime.now(ZoneId.systemDefault())) //
 				.type(KallLogg.TYPE_PLSQL) //
 				.kallRetning(KallLogg.RETNING_UT) //
 				.operation(procedureName) //
