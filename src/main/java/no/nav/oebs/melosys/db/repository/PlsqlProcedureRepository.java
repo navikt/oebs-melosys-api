@@ -39,9 +39,9 @@ public class PlsqlProcedureRepository {
 	private static final int PROCEDURE_NAME_NO_SCHEMA_TOKENS = 2;
 	private static final int PROCEDURE_NAME_WITH_SCHEMA_TOKENS = 3;
 
-	private KallLoggRepository kallLoggRepository;
+	private final KallLoggRepository kallLoggRepository;
 
-	private JdbcTemplate jdbcTemplate;
+	private final JdbcTemplate jdbcTemplate;
 
 	private ConcurrentMap<String, SimpleJdbcCall> jdbcCallCache = new ConcurrentHashMap<>();
 
@@ -88,15 +88,9 @@ public class PlsqlProcedureRepository {
 			result = executeProcedure(jdbcCall, inParams);
 
 			return result;
-		} catch (Exception e) {
-			exception = e;
-			log.error("EN FEIL HAR OPPSTÅTT");
-			throw e;
 		} finally {
 			long endTime = System.currentTimeMillis();
-			log.info("*************************");
-			log.info("Resultatet av kallet er {}", PlsqlProcedureResult.getMessage(result));
-			log.info("Logger prosedyrekall: ");
+			log.info("Result of InOutProdedure {} is {}", procedureName, PlsqlProcedureResult.getMessage(result));
 			logProcedureCall(procedureName, dataIn, result, endTime - startTime, exception);
 		}
 	}
@@ -132,15 +126,9 @@ public class PlsqlProcedureRepository {
 			result = executeOutProcedure(jdbcCall);
 
 			return result;
-		} catch (Exception e) {
-			exception = e;
-			log.error("EN FEIL HAR OPPSTÅTT");
-			throw e;
 		} finally {
 			long endTime = System.currentTimeMillis();
-			log.info("*************************");
-			log.info("Resultatet av kallet er {}", PlsqlProcedureResult.getMessage(result));
-			log.info("Logger prosedyrekall: ");
+			log.info("Result of OutProdedure {} is {}", procedureName, PlsqlProcedureResult.getMessage(result));
 			logProcedureCall(procedureName,"", result, endTime - startTime, exception);
 		}
 	}
@@ -243,7 +231,7 @@ public class PlsqlProcedureRepository {
 
 	public void saveKallLogg(KallLogg kallLogg) {
 		try {
-			log.info("lagrer KallLogg {}", kallLogg);
+			log.info("Save KallLogg {}", kallLogg);
 			kallLoggRepository.save(kallLogg);
 		} catch (Exception e) {
 			log.error("Feil ved logging av kalloggdata til databasen; feilmelding=" + e.getMessage(), e);

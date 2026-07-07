@@ -13,11 +13,9 @@ public class KafkaErrorHandler implements ConsumerAwareListenerErrorHandler{
 
 
     public Object handleError(Message<?> message, ListenerExecutionFailedException e, Consumer<?, ?> consumer) {
-        log.warn("Feil under lytting melding feilet: {} ,fordi {}", message.getPayload(), e.getCause());
+        log.warn("Exception thrown during kafka consuming with error message: {} and cause: {}",
+                e.getMessage(), e.getCause() != null ? e.getCause().toString() : "unknown cause");
 
-        if(e.getCause() instanceof RuntimeException) {
-            throw e;
-        }
         return null;
     }
 }

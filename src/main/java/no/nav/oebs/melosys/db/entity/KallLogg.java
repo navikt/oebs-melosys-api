@@ -27,7 +27,7 @@ import lombok.ToString;
 @Builder
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"request", "response"})
 @Table(name = "XXRTV_MEL_LOGG", schema = "XXRTV")
 public class KallLogg {
 

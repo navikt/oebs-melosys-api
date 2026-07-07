@@ -33,7 +33,7 @@ public class SpringQuartzScheduler {
 
     @PostConstruct
     public void init() {
-        logger.info("Hello world from Spring...");
+        logger.info("SpringQuartzScheduler has been initialized");
     }
 
     @Bean
