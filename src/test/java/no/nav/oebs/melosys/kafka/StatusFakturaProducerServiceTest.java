@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class StatusFakturaProducerServiceImplTest {
+class StatusFakturaProducerServiceTest {
 
     @Mock
     private KafkaTemplate<String, FakturaStatus> kafkaTemplate;
@@ -32,14 +32,14 @@ class StatusFakturaProducerServiceImplTest {
     @Mock
     private PlsqlProcedureRepository plsqlProcedureRepository;
 
-    private StatusFakturaProducerServiceImpl service;
+    private StatusFakturaProducerService service;
 
     private static final String TOPIC = "faktura-status-topic";
     private static final String FAKTURA_STATUS_JSON = "{\"fakturaReferanseNr\":\"REF-001\",\"status\":\"SENDT\"}";
 
     @BeforeEach
     void setUp() {
-        service = new StatusFakturaProducerServiceImpl(
+        service = new StatusFakturaProducerService(
                 kafkaTemplate,
                 plsqlProcedureRepository,
                 JsonMapper.builder().findAndAddModules().build());
