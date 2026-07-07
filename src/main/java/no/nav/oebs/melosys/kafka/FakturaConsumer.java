@@ -46,24 +46,26 @@ public class FakturaConsumer {
     public void consumeMessages(ConsumerRecord<String, String> consumerRecord, Acknowledgment acks) throws Exception {
         long startTime = System.currentTimeMillis();
         String kafkaPosition = " partition: " + consumerRecord.partition() + ", offset: " + consumerRecord.offset() + ", message: ";
-        log.info("LESER FRA KAFKA TOPIC...");
-        log.info("Melding hentet fra partition: {} med offset {} fra topic {}", consumerRecord.partition(), consumerRecord.offset(), consumerRecord.topic());
+        log.info("Message consumed from topic {} with offset {}",  consumerRecord.topic(), consumerRecord.offset());
         long endTime = System.currentTimeMillis();
         plsqlProcedureRepository.saveKallLogg(kallLoggBuilder(PLSQL_PROCEDURE, consumerRecord.value(), endTime - startTime, null,null, kafkaPosition ));
 
         PlsqlProcedureResult result = plsqlProcedureRepository.executeInOutProcedure(PLSQL_PROCEDURE, consumerRecord.value());
         if (result.getMessageNumber() == PlsqlMessageCodes.OK) {
             acks.acknowledge();
-            log.info("Committing partition and offset: {},{}", consumerRecord.partition(), consumerRecord.offset());
+            log.info("Message consumed from partition and topic: {},{}", consumerRecord.partition(), consumerRecord.offset());
         } else if (result.getMessageNumber() == PlsqlMessageCodes.EXCEPTION) {
             Faktura faktura = mapFaktura(consumerRecord.value());
             FakturaStatusFeilImport fakturaStatus = new FakturaStatusFeilImport(faktura.getFakturaReferanseNr(), result.getMessage());
             fakturaStatusProducerService.sendFakturaStatusVedFeil(fakturaStatus);
             acks.acknowledge();
-            log.info("Error in input: {}, errormessage: {}", consumerRecord.value(), result.getMessage());
-            log.info("Committing partition and offset: {},{}", consumerRecord.partition(), consumerRecord.offset());
+            log.info("Offset commited but message is not processed by OeBS due to errormessage: {} \n caused by invalid input {}",
+                    result.getMessage(), LoggingUtils.maskIfFnr(consumerRecord.value()));
         } else {
-            Exception ex = new RuntimeException("Ukjent feil oppstått ved lagring til databasen");
+            Exception ex = new RuntimeException("Unknown exception occurred while processing message at topic: "
+                    + consumerRecord.topic() + ", partition: " + consumerRecord.partition()
+                    + ", offset: " + consumerRecord.offset()
+                    + " — result message: " + result.getMessage());
             acks.acknowledge();
             throw ex;
         }
