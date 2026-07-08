@@ -73,7 +73,7 @@ jobs:
       - uses: nais/deploy/actions/deploy@2d18f050f07b6a007864c6a57070ed915d571beb
         env:
           CLUSTER: dev-fss
-          RESOURCE: .nais/nais-t1.yaml
+          RESOURCE: .nais/nais-t1-old.yaml
           VAR: image=${{ needs.build.outputs.image }}
 
   deploy-q1:
@@ -90,6 +90,40 @@ jobs:
       - uses: nais/deploy/actions/deploy@2d18f050f07b6a007864c6a57070ed915d571beb
         env:
           CLUSTER: dev-fss
+          RESOURCE: .nais/nais-q1-old.yaml
+          VAR: image=${{ needs.build.outputs.image }}
+
+  deploy-t1-faktura-processor-oebs:
+    name: Deploy faktura-processor-oebs t1 instance
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+
+      - uses: nais/deploy/actions/deploy@2d18f050f07b6a007864c6a57070ed915d571beb
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: .nais/nais-t1.yaml
+          VAR: image=${{ needs.build.outputs.image }}
+
+  deploy-q1-faktura-processor-oebs:
+    name: Deploy faktura-processor-oebs q1 instance
+    needs: [build, deploy-t1-faktura-processor-oebs]
+    if: github.event_name != 'pull_request' && github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+
+      - uses: nais/deploy/actions/deploy@2d18f050f07b6a007864c6a57070ed915d571beb
+        env:
+          CLUSTER: dev-gcp
           RESOURCE: .nais/nais-q1.yaml
           VAR: image=${{ needs.build.outputs.image }}
 
