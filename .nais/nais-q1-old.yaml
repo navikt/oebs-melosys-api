@@ -1,7 +1,7 @@
 apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
-  name: faktura-processor-oebs-t1
+  name: oebs-melosys-api-q1
   namespace: team-oebs
   labels:
     team: team-oebs
@@ -35,25 +35,25 @@ spec:
   accessPolicy:
     inbound:
       rules:
-         - application: faktura-processor-oebs-t1
+         - application: oebs-melosys-api-q1
            namespace: team-oebs
-           cluster: dev-gcp
+           cluster: dev-fss
   prometheus:
     enabled: true
     path: /actuator/prometheus
 
   env:
     - name: KAFKA_SSL_TRUSTSTORE
-      value: PKCS12
+      value: JKS
     - name: KAFKA_PRODUCER_CLIENT_ID
-      value: oebs-faktura-status-producer-t1
+      value: oebs-faktura-status-producer-q1
     - name: KAFKA_TOPIC_FAKTURA_STATUS
-      value: team-oebs.faktura-status.v1-t1
+      value: team-oebs.faktura-status.v1-q1
     - name: KAFKA_TOPIC_TEST_FAKTURA
-      value: teammelosys.faktura-bestilt.v1-q1
+      value: teammelosys.faktura-bestilt.v1-q2
 
   envFrom:
-    - secret: faktura-processor-oebs-t1
+    - secret: oebs-melosys-api-q1
 
   observability:
     autoInstrumentation:

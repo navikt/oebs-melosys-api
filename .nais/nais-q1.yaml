@@ -1,7 +1,7 @@
 apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
-  name: oebs-melosys-api-q1
+  name: faktura-processor-oebs-q1
   namespace: team-oebs
   labels:
     team: team-oebs
@@ -35,9 +35,9 @@ spec:
   accessPolicy:
     inbound:
       rules:
-         - application: oebs-melosys-api-q1
+         - application: faktura-processor-oebs-q1
            namespace: team-oebs
-           cluster: dev-fss
+           cluster: dev-gcp
   prometheus:
     enabled: true
     path: /actuator/prometheus
@@ -53,7 +53,7 @@ spec:
       value: teammelosys.faktura-bestilt.v1-q2
 
   envFrom:
-    - secret: oebs-melosys-api-q1
+    - secret: faktura-processor-oebs-q1
 
   observability:
     autoInstrumentation:
