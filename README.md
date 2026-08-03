@@ -1,6 +1,10 @@
 
 # oebs-melosys-api
 
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=navikt_oebs-melosys-api&metric=coverage)](https://sonarcloud.io/summary/new_code?id=navikt_oebs-melosys-api)
+[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=navikt_oebs-melosys-api&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=navikt_oebs-melosys-api)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=navikt_oebs-melosys-api&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=navikt_oebs-melosys-api)
+
 Kafka bridge service that processes invoices from Melosys and sends invoice statuses back to Melosys via Kafka,
 using the OEBS Oracle database as the processing backend.
 The service runs in sikker sone (FSS) and acts as the integration layer between Melosys and OEBS for invoice handling.
