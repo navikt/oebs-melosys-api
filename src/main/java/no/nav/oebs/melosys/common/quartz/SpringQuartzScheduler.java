@@ -3,6 +3,7 @@ package no.nav.oebs.melosys.common.quartz;
 import no.nav.oebs.melosys.kafka.ScheduledFakturaStatusProducer;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.ApplicationContext;
@@ -16,12 +17,19 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.quartz.*;
 
 import javax.sql.DataSource;
-import java.util.Date;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @Configuration
 @EnableAutoConfiguration
 @ConditionalOnExpression("'${using.spring.schedulerFactory}'=='true'")
 public class SpringQuartzScheduler {
+
+    private static final LocalTime START_TIME = LocalTime.of(8, 30);
+    private static final ZoneId TIME_ZONE = ZoneId.of("Europe/Oslo");
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -63,6 +71,7 @@ public class SpringQuartzScheduler {
 
         logger.debug("Setter Trigger");
         schedulerFactory.setTriggers(trigger1, trigger2);
+        schedulerFactory.setOverwriteExistingJobs(true);
 
         return schedulerFactory;
     }
@@ -78,16 +87,31 @@ public class SpringQuartzScheduler {
     }
 
     @Bean
-    public SimpleTriggerFactoryBean fakturaStatusTrigger(@Qualifier("levFakturaStatus") JobDetail job){
-        int frequencyInsec = 60;
-        Date startTime = DateBuilder.todayAt(8, 30, 0);
+    public SimpleTriggerFactoryBean fakturaStatusTrigger(@Qualifier("levFakturaStatus") JobDetail job,
+                                                         @Value("${app.fakturastatus.interval-minutes}") long intervalMinutes) {
         SimpleTriggerFactoryBean trigger = new SimpleTriggerFactoryBean();
         trigger.setJobDetail(job);
-        trigger.setStartTime(startTime);
-        trigger.setRepeatInterval(frequencyInsec * 1000 * (long) 5);
+        trigger.setStartDelay(delayUntilNextStart(Clock.system(TIME_ZONE), Duration.ofMinutes(intervalMinutes)).toMillis());
+        trigger.setRepeatInterval(Duration.ofMinutes(intervalMinutes).toMillis());
         trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
         trigger.setName("Qrtz_Trigger_LevFakuraStatus");
         return trigger;
+    }
+
+    /**
+     * Tid til første kjøring: kl. 08:30 i dag, eller neste intervall etter 08:30 dersom tidspunktet er passert.
+     */
+    static Duration delayUntilNextStart(Clock clock, Duration interval) {
+        if (interval.isZero() || interval.isNegative()) {
+            throw new IllegalArgumentException("Interval must be positive, was " + interval);
+        }
+        ZonedDateTime now = ZonedDateTime.now(clock);
+        ZonedDateTime start = now.toLocalDate().atTime(START_TIME).atZone(clock.getZone());
+        if (start.isBefore(now)) {
+            long passedIntervals = Duration.between(start, now).toMillis() / interval.toMillis() + 1;
+            start = start.plus(interval.multipliedBy(passedIntervals));
+        }
+        return Duration.between(now, start);
     }
 
     @Bean

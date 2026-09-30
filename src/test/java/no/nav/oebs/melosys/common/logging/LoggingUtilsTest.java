@@ -151,4 +151,23 @@ class LoggingUtilsTest {
             assertEquals("", result);
         }
     }
+
+    @Nested
+    class DescribePayloadTests {
+
+        @Test
+        void describePayload_withNull_returnsIngen() {
+            assertEquals("ingen", LoggingUtils.describePayload(null));
+        }
+
+        @Test
+        void describePayload_withEmpty_returnsIngen() {
+            assertEquals("ingen", LoggingUtils.describePayload(""));
+        }
+
+        @Test
+        void describePayload_withContent_returnsLengthOnly() {
+            assertEquals("17 tegn", LoggingUtils.describePayload("{\"fnr\":\"secret\"}X"));
+        }
+    }
 }

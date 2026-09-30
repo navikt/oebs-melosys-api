@@ -37,6 +37,8 @@ spring:
       client-id: client-id-test
 
 app:
+  fakturastatus:
+    interval-minutes: 5
   kafka:
     retry-max-attempts: '5'
     retry-backoff-period-ms: '30000'

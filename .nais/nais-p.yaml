@@ -52,6 +52,8 @@ spec:
       value: team-oebs.faktura-status.v1
     - name: KAFKA_TOPIC_TEST_FAKTURA
       value: teammelosys.faktura-bestilt.v1
+    - name: FAKTURASTATUS_INTERVAL_MINUTES
+      value: "1440"
 
   envFrom:
     - secret: oebs-melosys-api

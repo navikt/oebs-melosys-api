@@ -50,4 +50,16 @@ public class LoggingUtils {
 		}
 		return FNR_PATTERN.matcher(text).replaceAll("$1$2" + "*******" + "$3$4");
 	}
+
+	/**
+	 * Beskriver en payload uten å avsløre innholdet, for bruk i applikasjonsloggen.
+	 *
+	 * @return "ingen" dersom payload er null eller tom, ellers antall tegn.
+	 */
+	public static String describePayload(String payload) {
+		if (payload == null || payload.isEmpty()) {
+			return "ingen";
+		}
+		return payload.length() + " tegn";
+	}
 }
