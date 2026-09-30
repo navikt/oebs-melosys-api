@@ -51,6 +51,8 @@ using:
     schedulerFactory: true
 
 app:
+  fakturastatus:
+    interval-minutes: ${FAKTURASTATUS_INTERVAL_MINUTES}
   kafka:
     retry-max-attempts: '5'
     retry-backoff-period-ms: '30000'
