@@ -12,6 +12,7 @@ import no.nav.oebs.melosys.exception.KafkaProducerInterruptedException;
 import no.nav.oebs.melosys.db.repository.PlsqlMessageCodes;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureRepository;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureResult;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -23,7 +24,6 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -59,32 +59,32 @@ public class StatusFakturaProducerService {
         Exception exception = null;
         long startTime = System.currentTimeMillis();
         String korrelasjonId = plsqlProcedureRepository.generateAndSetCorrelationId();
-        String dataOut = null;
-        CompletableFuture<SendResult<String, FakturaStatus>> future = kafkaTemplate.send(topic ,status);
-        String messageIdentifier = String.format("fakturaNr: %s fakturaReferanseNr: %s korrelasjonId: %s",
-                status.getFakturaNummer(), status.getFakturaReferanseNr(), korrelasjonId);
+        String dataOut = LoggingUtils.maskIfFnr(objektMaps.toJson(status));
+        String kafkaPosition = " topic: " + topic + ", message: ";
         try {
-            SendResult<String, FakturaStatus> sendeResultat = future.get();
-            dataOut = objektMaps.toJson(sendeResultat.getProducerRecord().value());
-            log.info("Fakturastatus message produced to topic with {}", messageIdentifier);
+            SendResult<String, FakturaStatus> sendeResultat = kafkaTemplate.send(topic, status).get();
+            RecordMetadata metadata = sendeResultat.getRecordMetadata();
+            if (metadata != null) {
+                kafkaPosition = " partition: " + metadata.partition() + ", offset: " + metadata.offset() + ", message: ";
+            }
+            log.info("Fakturastatus message produced to topic, korrelasjonId={}", korrelasjonId);
         } catch (InterruptedException e) {
             exception = e;
             Thread.currentThread().interrupt();
             String msg = MessageFormat.format(
-                    "Message not sent to Kafka for fakturaref: {0} due to interruption",
-                    messageIdentifier);
+                    "Message not sent to Kafka due to interruption, korrelasjonId={0}",
+                    korrelasjonId);
             throw new KafkaProducerInterruptedException(msg, e);
         } catch (Exception e) {
             exception = e;
             String msg = MessageFormat.format(
-                    "Message not sent to Kafka for fakturaref: {0} due to exception",
-                    messageIdentifier);
+                    "Message not sent to Kafka due to exception, korrelasjonId={0}",
+                    korrelasjonId);
             throw new KafkaProducerException(msg, e);
         } finally {
-            log.info("Message logged in OeBS for {}", messageIdentifier);
             long endTime = System.currentTimeMillis();
             plsqlProcedureRepository.saveKallLogg(
-                    kallLoggBuilder(korrelasjonId , procedureName, dataOut, endTime-startTime, result, exception));
+                    kallLoggBuilder(korrelasjonId, procedureName, dataOut, endTime - startTime, result, exception, kafkaPosition));
         }
     }
 
@@ -105,21 +105,21 @@ public class StatusFakturaProducerService {
         }
     }
 
-    private KallLogg kallLoggBuilder(String korrelasjonId, String procedureName, String dataOut, long executionTime, PlsqlProcedureResult result, Exception exception) {
+    private KallLogg kallLoggBuilder(String korrelasjonId, String procedureName, String dataOut, long executionTime,
+                                     PlsqlProcedureResult result, Exception exception, String kafkaPosition) {
         return KallLogg.builder()
                 .korrelasjonId(korrelasjonId)
                 .tidspunkt(LocalDateTime.now(ZoneId.systemDefault()))
                 .type(KallLogg.TYPE_KAFKA)
                 .kallRetning(KallLogg.RETNING_UT)
                 .operation(procedureName)
-                .status(exception != null ? Integer.valueOf(PlsqlMessageCodes.EXCEPTION)
-                        : Integer.valueOf(PlsqlMessageCodes.OK)) // PlsqlProcedureResult.getMessageNumber(result)
+                .status(exception != null ? PlsqlMessageCodes.EXCEPTION : PlsqlMessageCodes.OK)
                 .kalltid(executionTime)
                 .request(dataOut)
                 .response(null)
-                .logginfo(exception != null
+                .logginfo(kafkaPosition + (exception != null
                         ? LoggingUtils.formatExceptionAsString(exception)
-                        : PlsqlProcedureResult.getMessage(result))
+                        : PlsqlProcedureResult.getMessage(result)))
                 .build();
     }
 }

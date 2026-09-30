@@ -1,5 +1,8 @@
 package no.nav.oebs.melosys.repository;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import no.nav.oebs.melosys.db.entity.KallLogg;
 import no.nav.oebs.melosys.db.repository.KallLoggRepository;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureRepository;
@@ -9,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -189,6 +193,39 @@ class PlsqlProcedureRepositoryTest {
         doThrow(new RuntimeException("DB error")).when(kallLoggRepository).save(any());
 
         assertDoesNotThrow(() -> repository.saveKallLogg(kallLogg));
+    }
+
+    @Test
+    void saveKallLogg_logsOnlyMetadataButPersistsFullPayload() {
+        Logger logger = (Logger) LoggerFactory.getLogger(PlsqlProcedureRepository.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            KallLogg kallLogg = KallLogg.builder()
+                    .korrelasjonId("123-456")
+                    .request("{\"secretRequest\":\"hemmelig-inn\"}")
+                    .response("{\"secretResponse\":\"hemmelig-ut\"}")
+                    .logginfo("OK")
+                    .build();
+
+            repository.saveKallLogg(kallLogg);
+
+            verify(kallLoggRepository).save(kallLogg);
+            assertEquals("{\"secretRequest\":\"hemmelig-inn\"}", kallLogg.getRequest());
+            assertEquals("{\"secretResponse\":\"hemmelig-ut\"}", kallLogg.getResponse());
+
+            String logOutput = appender.list.stream()
+                    .map(ILoggingEvent::getFormattedMessage)
+                    .reduce("", String::concat);
+            assertTrue(logOutput.contains("korrelasjonId=123-456"));
+            assertTrue(logOutput.contains("request=32 tegn"));
+            assertTrue(logOutput.contains("response=32 tegn"));
+            assertTrue(logOutput.contains("logginfo=OK"));
+            assertFalse(logOutput.contains("hemmelig"));
+        } finally {
+            logger.detachAppender(appender);
+        }
     }
 
     // --- generateAndSetCorrelationId ---

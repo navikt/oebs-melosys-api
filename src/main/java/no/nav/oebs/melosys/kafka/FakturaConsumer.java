@@ -59,8 +59,8 @@ public class FakturaConsumer {
             FakturaStatusFeilImport fakturaStatus = new FakturaStatusFeilImport(faktura.getFakturaReferanseNr(), result.getMessage());
             fakturaStatusProducerService.sendFakturaStatusVedFeil(fakturaStatus);
             acks.acknowledge();
-            log.info("Offset commited but message is not processed by OeBS due to errormessage: {} \n caused by invalid input {}",
-                    result.getMessage(), LoggingUtils.maskIfFnr(consumerRecord.value()));
+            log.info("Offset commited but message is not processed by OeBS, see KallLogg for details. errormessage: {}",
+                    LoggingUtils.maskIfFnr(result.getMessage()));
         } else {
             Exception ex = new RuntimeException("Unknown exception occurred while processing message at topic: "
                     + consumerRecord.topic() + ", partition: " + consumerRecord.partition()

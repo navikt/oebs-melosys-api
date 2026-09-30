@@ -90,7 +90,6 @@ public class PlsqlProcedureRepository {
 			return result;
 		} finally {
 			long endTime = System.currentTimeMillis();
-			log.info("Result of InOutProdedure {} is {}", procedureName, PlsqlProcedureResult.getMessage(result));
 			logProcedureCall(procedureName, dataIn, result, endTime - startTime, exception);
 		}
 	}
@@ -128,7 +127,6 @@ public class PlsqlProcedureRepository {
 			return result;
 		} finally {
 			long endTime = System.currentTimeMillis();
-			log.info("Result of OutProdedure {} is {}", procedureName, PlsqlProcedureResult.getMessage(result));
 			logProcedureCall(procedureName,"", result, endTime - startTime, exception);
 		}
 	}
@@ -231,10 +229,15 @@ public class PlsqlProcedureRepository {
 
 	public void saveKallLogg(KallLogg kallLogg) {
 		try {
-			log.info("Save KallLogg {}", kallLogg);
+			log.info("Save KallLogg korrelasjonId={} type={} retning={} operation={} status={} kalltid={}ms request={} response={} logginfo={}",
+					kallLogg.getKorrelasjonId(), kallLogg.getType(), kallLogg.getKallRetning(), kallLogg.getOperation(),
+					kallLogg.getStatus(), kallLogg.getKalltid(),
+					LoggingUtils.describePayload(kallLogg.getRequest()),
+					LoggingUtils.describePayload(kallLogg.getResponse()),
+					LoggingUtils.maskIfFnr(kallLogg.getLogginfo()));
 			kallLoggRepository.save(kallLogg);
 		} catch (Exception e) {
-			log.error("Feil ved logging av kalloggdata til databasen; feilmelding=" + e.getMessage(), e);
+			log.error("Feil ved logging av kalloggdata til databasen for korrelasjonId={}", kallLogg.getKorrelasjonId(), e);
 		}
 	}
 

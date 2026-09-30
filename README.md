@@ -28,7 +28,7 @@ All inbound and outbound calls are logged to the OEBS database via `KallLogg`.
 
 Two flows are handled:
 - **Inbound:** Invoice messages from Melosys are consumed from Kafka and passed to the OEBS Oracle database via the PL/SQL procedure `apps.xxrtv_ar_melosys_pkg.fakturaimport`. If the import fails, an error status is immediately sent back to Melosys via the faktura-status topic.
-- **Outbound:** A scheduled Quartz job queries the OEBS Oracle database via `apps.xxrtv_ar_melosys_pkg.fakturastatus` and publishes invoice statuses to Melosys via the faktura-status Kafka topic. The job runs every 5 minutes starting at 08:30, and also once on startup.
+- **Outbound:** A scheduled Quartz job queries the OEBS Oracle database via `apps.xxrtv_ar_melosys_pkg.fakturastatus` and publishes invoice statuses to Melosys via the faktura-status Kafka topic. The job runs once on startup and then on a fixed interval starting at 08:30 (once a day in prod, every 5 minutes in t1/q1).
 
 
 
@@ -66,7 +66,9 @@ A Quartz scheduler job (`ScheduledFakturaStatusProducer`) runs on a fixed schedu
 | Trigger | Schedule |
 |---------|----------|
 | On startup | Once, immediately |
-| Recurring | Every 5 minutes, starting at 08:30 |
+| Recurring | Starting at 08:30, repeating every `FAKTURASTATUS_INTERVAL_MINUTES` (prod: 1440, t1/q1: 5) |
+
+The interval is set per environment in `.nais/nais-*.yaml`. Triggers are overwritten on startup, so a changed interval takes effect on the next deploy.
 
 The job calls `apps.xxrtv_ar_melosys_pkg.fakturastatus`, splits the result line by line,
 and publishes each invoice status individually to the `faktura-status` Kafka topic.

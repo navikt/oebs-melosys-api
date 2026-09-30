@@ -5,10 +5,14 @@ import no.nav.oebs.melosys.db.entity.FakturaStatusFeilImport;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureRepository;
 import no.nav.oebs.melosys.db.repository.PlsqlProcedureResult;
 import no.nav.oebs.melosys.exception.InputValidationException;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import no.nav.oebs.melosys.db.entity.KallLogg;
+import no.nav.oebs.melosys.db.repository.PlsqlMessageCodes;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -53,7 +57,7 @@ class StatusFakturaProducerServiceTest {
 
         @SuppressWarnings("unchecked")
         SendResult<String, FakturaStatus> sendResult = mock(SendResult.class);
-        when(sendResult.getProducerRecord()).thenReturn(new ProducerRecord<>(TOPIC, fakturaStatus));
+        when(sendResult.getRecordMetadata()).thenReturn(recordMetadata());
 
         when(kafkaTemplate.send(anyString(), any(FakturaStatus.class)))
                 .thenReturn(CompletableFuture.completedFuture(sendResult));
@@ -63,7 +67,16 @@ class StatusFakturaProducerServiceTest {
         assertDoesNotThrow(() -> service.sendFakturaStatus(fakturaStatus, plsqlResult, "FAKTURA.PROSEDYRE"));
 
         verify(kafkaTemplate).send(TOPIC, fakturaStatus);
-        verify(plsqlProcedureRepository).saveKallLogg(any());
+        ArgumentCaptor<KallLogg> captor = ArgumentCaptor.forClass(KallLogg.class);
+        verify(plsqlProcedureRepository).saveKallLogg(captor.capture());
+        KallLogg kallLogg = captor.getValue();
+        assertEquals(KallLogg.TYPE_KAFKA, kallLogg.getType());
+        assertEquals(KallLogg.RETNING_UT, kallLogg.getKallRetning());
+        assertEquals("FAKTURA.PROSEDYRE", kallLogg.getOperation());
+        assertEquals(PlsqlMessageCodes.OK, kallLogg.getStatus());
+        assertTrue(kallLogg.getRequest().contains("REF-001"));
+        assertNull(kallLogg.getResponse());
+        assertEquals(" partition: 2, offset: 42, message: OK", kallLogg.getLogginfo());
     }
 
     @Test
@@ -76,6 +89,32 @@ class StatusFakturaProducerServiceTest {
 
         assertThrows(RuntimeException.class, () ->
                 service.sendFakturaStatus(fakturaStatus, null, "FAKTURA.PROSEDYRE"));
+
+        ArgumentCaptor<KallLogg> captor = ArgumentCaptor.forClass(KallLogg.class);
+        verify(plsqlProcedureRepository).saveKallLogg(captor.capture());
+        KallLogg kallLogg = captor.getValue();
+        assertEquals(PlsqlMessageCodes.EXCEPTION, kallLogg.getStatus());
+        assertTrue(kallLogg.getRequest().contains("REF-001"));
+        assertTrue(kallLogg.getLogginfo().startsWith(" topic: " + TOPIC + ", message: "));
+        assertTrue(kallLogg.getLogginfo().contains("Kafka er nede"));
+    }
+
+    @Test
+    void sendFakturaStatus_masksFnrInKallLoggRequest() {
+        FakturaStatus fakturaStatus = new FakturaStatus();
+        fakturaStatus.setFakturaReferanseNr("12345678901");
+
+        @SuppressWarnings("unchecked")
+        SendResult<String, FakturaStatus> sendResult = mock(SendResult.class);
+        when(sendResult.getRecordMetadata()).thenReturn(recordMetadata());
+        when(kafkaTemplate.send(anyString(), any(FakturaStatus.class)))
+                .thenReturn(CompletableFuture.completedFuture(sendResult));
+
+        service.sendFakturaStatus(fakturaStatus, null, "FAKTURA.PROSEDYRE");
+
+        ArgumentCaptor<KallLogg> captor = ArgumentCaptor.forClass(KallLogg.class);
+        verify(plsqlProcedureRepository).saveKallLogg(captor.capture());
+        assertFalse(captor.getValue().getRequest().contains("12345678901"));
     }
 
     @Test
@@ -91,7 +130,7 @@ class StatusFakturaProducerServiceTest {
 
         @SuppressWarnings("unchecked")
         SendResult<String, FakturaStatus> sendResult = mock(SendResult.class);
-        when(sendResult.getProducerRecord()).thenReturn(new ProducerRecord<>(TOPIC, feilStatus));
+        when(sendResult.getRecordMetadata()).thenReturn(recordMetadata());
 
         when(kafkaTemplate.send(anyString(), any(FakturaStatus.class)))
                 .thenReturn(CompletableFuture.completedFuture(sendResult));
@@ -126,8 +165,9 @@ class StatusFakturaProducerServiceTest {
         when(plsqlProcedureRepository.executeOutProcedure(anyString()))
                 .thenReturn(new PlsqlProcedureResult(FAKTURA_STATUS_JSON, 0, "OK"));
 
+        @SuppressWarnings("unchecked")
         SendResult<String, FakturaStatus> sendResult = mock(SendResult.class);
-        when(sendResult.getProducerRecord()).thenReturn(new ProducerRecord<>(TOPIC, new FakturaStatus()));
+        when(sendResult.getRecordMetadata()).thenReturn(recordMetadata());
         when(kafkaTemplate.send(anyString(), any(FakturaStatus.class)))
                 .thenReturn(CompletableFuture.completedFuture(sendResult));
 
@@ -137,5 +177,9 @@ class StatusFakturaProducerServiceTest {
         expected.setFakturaReferanseNr("REF-001");
         expected.setStatus("SENDT");
         verify(kafkaTemplate, times(1)).send(TOPIC, expected);
+    }
+
+    private static RecordMetadata recordMetadata() {
+        return new RecordMetadata(new TopicPartition(TOPIC, 2), 42L, 0, 0L, 0, 0);
     }
 }
